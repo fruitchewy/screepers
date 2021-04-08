@@ -25,6 +25,6 @@ declare global {
     source: RoomPosition;
     target: RoomPosition;
     remaining?: number;
-    owner: Id<StructureController> | Id<StructureSpawn>;
+    owner: Id<StructureController> | Id<StructureSpawn> | Id<ConstructionSite>;
   }
 }

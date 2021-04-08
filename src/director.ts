@@ -1,4 +1,5 @@
 import * as harvester from "jobs/harvester";
+import * as builder from "jobs/builder";
 
 export module CreepManagement {
   export class Director {
@@ -7,7 +8,7 @@ export module CreepManagement {
     freeCreeps: Creep[] = [];
     bodyTypes: Map<Job, BodyPartConstant[]> = new Map([
       [Job.Harvester, [WORK, CARRY, MOVE]],
-      [Job.Upgrader, [WORK, CARRY, MOVE]]
+      [Job.Builder, [WORK, CARRY, MOVE]]
     ]);
 
     constructor(room: Room) {
@@ -16,18 +17,20 @@ export module CreepManagement {
 
     run() {
       this.loadCreeps();
-      const wants = this.scheduleHarvesters();
+      const wants = this.scheduleHarvesters().concat(this.scheduleBuilders());
       const unsatisfied = this.allocateCreeps(wants);
       console.log(unsatisfied.length + " unsatisfied assignments");
       const spawned = this.spawnCreeps(unsatisfied);
       console.log(spawned + " spawning");
 
       for (const creep of this.creeps) {
+          console.log("Running " + creep.name);
         switch (creep.memory.job) {
           case Job.Harvester:
-            console.log("running harvester " + creep.name);
             harvester.run(creep, this.room);
             break;
+          case Job.Builder:
+            builder.run(creep, this.room);
           default:
             break;
         }
@@ -85,6 +88,18 @@ export module CreepManagement {
       return wants;
     }
 
+    private scheduleBuilders(): Assignment[] {
+      let wants: Assignment[] = [];
+
+      for (const name in Game.constructionSites) {
+          const site = Game.constructionSites[name];
+          if (this.getWorkersById(site.id).length < 1) {
+            wants.push({job: Job.Builder, memory: {job: Job.Builder, source: this.room.find(FIND_SOURCES)[0].pos, target: site.pos, owner: site.id}})
+          }
+      }
+        return wants;
+    }
+
     private newHarvesterAssignment(
       owner: Id<StructureController> | Id<StructureSpawn>,
       source: RoomPosition,
@@ -136,7 +151,7 @@ export module CreepManagement {
       return 0;
     }
 
-    private getWorkersById(id: Id<StructureController> | Id<StructureSpawn>): Creep[] {
+    private getWorkersById(id: Id<StructureController> | Id<StructureSpawn> | Id<ConstructionSite>): Creep[] {
       let workers: Creep[] = [];
       for (const creep of this.creeps) {
         if (creep.memory.owner === id) {
@@ -154,6 +169,6 @@ export module CreepManagement {
 
   export enum Job {
     Harvester = "Harvester",
-    Upgrader = "Upgrader"
+    Builder = "Builder"
   }
 }

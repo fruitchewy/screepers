@@ -31,6 +31,7 @@ export module CreepManagement {
             break;
           case Job.Builder:
             builder.run(creep, this.room);
+            break;
           default:
             break;
         }
@@ -41,7 +42,7 @@ export module CreepManagement {
       for (const name in Memory.creeps) {
         const creep = Game.creeps[name];
         this.creeps.push(creep);
-        if (!creep.memory.job) {
+        if (!creep.memory.job || creep.memory.job === Job.Idle) {
           console.log("found free creep");
           this.freeCreeps.push(creep);
         }
@@ -168,7 +169,8 @@ export module CreepManagement {
   }
 
   export enum Job {
+    Idle = "Idle",
     Harvester = "Harvester",
-    Builder = "Builder"
+    Builder = "Builder",
   }
 }

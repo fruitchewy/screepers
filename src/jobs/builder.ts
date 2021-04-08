@@ -2,17 +2,26 @@ import { CreepManagement } from "../director";
 
 // Runs all creep actions
 export function run(creep: Creep, room: Room): void {
-  const target = room.lookForAt(LOOK_CONSTRUCTION_SITES, creep.memory.target.x, creep.memory.target.y)[0];
   const source = room.lookForAt(LOOK_SOURCES, creep.memory.source.x, creep.memory.source.y)[0];
+  let target: ConstructionSite | Structure;
+  // Ensure we have either a construction site or a damaged structure
+  target = room.lookForAt(LOOK_CONSTRUCTION_SITES, creep.memory.target.x, creep.memory.target.y)[0]
+    ? room.lookForAt(LOOK_CONSTRUCTION_SITES, creep.memory.target.x, creep.memory.target.y)[0]
+    : room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
+  if ((target && target instanceof Structure && target.hits === target.hitsMax) || !source) {
+    creep.memory.owner = creep.id;
+    creep.memory.job = CreepManagement.Job.Idle;
+    return;
+  } else {
     creep.say(target.pos.x + "," + target.pos.y);
-  if (!target) {
-      creep.memory.job = CreepManagement.Job.Idle;
-      return;
   }
-  if (creep.store.getFreeCapacity() === 0 || tryBuild(creep, target) === 0) {
+
+  if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0 || tryBuild(creep, target) === 0) {
     moveToBuild(creep, target);
-  } else if (creep.store.getUsedCapacity() === 0 || tryHarvest(creep, source) === ERR_NOT_ENOUGH_ENERGY) {
+  } else if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0 || tryBuild(creep, target) === ERR_NOT_ENOUGH_ENERGY) {
     moveToHarvest(creep, source);
+  } else if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+    moveToBuild(creep, target);
   }
 }
 
@@ -22,16 +31,20 @@ function tryHarvest(creep: Creep, source: Source): number {
 
 function moveToHarvest(creep: Creep, source: Source): void {
   if (tryHarvest(creep, source) === ERR_NOT_IN_RANGE) {
-    creep.moveTo(source.pos);
+    creep.travelTo(source.pos);
   }
 }
 
-function tryBuild(creep: Creep, target: ConstructionSite): number {
-  return creep.build(target);
+function tryBuild(creep: Creep, target: ConstructionSite | Structure): number {
+  if (target instanceof Structure) {
+    return creep.repair(target);
+  } else {
+    return creep.build(target);
+  }
 }
 
-function moveToBuild(creep: Creep, target: ConstructionSite): void {
+function moveToBuild(creep: Creep, target: ConstructionSite | Structure): void {
   if (tryBuild(creep, target) === ERR_NOT_IN_RANGE) {
-    creep.moveTo(target.pos);
+    creep.travelTo(target.pos);
   }
 }

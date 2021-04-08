@@ -5,10 +5,9 @@ export module CreepManagement {
   export class Director {
     room: Room;
     creeps: Creep[] = [];
-    freeCreeps: Creep[] = [];
     bodyTypes: Map<Job, BodyPartConstant[]> = new Map([
-      [Job.Harvester, [WORK, CARRY, MOVE]],
-      [Job.Builder, [WORK, CARRY, MOVE]]
+      [Job.Harvester, [WORK, CARRY, CARRY, MOVE, MOVE]],
+      [Job.Builder, [WORK, CARRY, CARRY, MOVE, MOVE]]
     ]);
 
     constructor(room: Room) {
@@ -24,7 +23,6 @@ export module CreepManagement {
       console.log(spawned + " spawning");
 
       for (const creep of this.creeps) {
-          console.log("Running " + creep.name);
         switch (creep.memory.job) {
           case Job.Harvester:
             harvester.run(creep, this.room);
@@ -42,10 +40,6 @@ export module CreepManagement {
       for (const name in Memory.creeps) {
         const creep = Game.creeps[name];
         this.creeps.push(creep);
-        if (!creep.memory.job || creep.memory.job === Job.Idle) {
-          console.log("found free creep");
-          this.freeCreeps.push(creep);
-        }
       }
     }
 
@@ -55,14 +49,13 @@ export module CreepManagement {
       let wants: Assignment[] = [];
 
       //schedule spawner fueling
-      if (this.getWorkersById(spawn.id).length < 2) {
-        console.log("scheduling spawner fueler");
+      if (this.getWorkersById(spawn.id).length < 3) {
         wants.push(
           this.newHarvesterAssignment(
             spawn.id,
             this.room.find(FIND_SOURCES)[0].pos,
             spawn.pos,
-            spawn.store.getFreeCapacity(RESOURCE_ENERGY)
+            9999
           )
         );
       }
@@ -75,7 +68,6 @@ export module CreepManagement {
             spawn.store.getUsedCapacity(RESOURCE_ENERGY) > 300))
       ) {
         for (let i = 0; i < 3 - this.getWorkersById(this.room.controller.id).length; i++) {
-          console.log("scheduling controller fueler");
           wants.push(
             this.newHarvesterAssignment(
               this.room.controller.id,
@@ -120,7 +112,8 @@ export module CreepManagement {
     private allocateCreeps(wants: Assignment[]): Assignment[] {
       let unsatisfied: Assignment[] = [];
       for (const want of wants) {
-        const matches = _.filter(this.freeCreeps, (creep: Creep) =>
+        const matches = _.filter(this.creeps, (creep: Creep) =>
+          (!creep.memory.job || creep.memory.job == Job.Idle) && 
           creep.body.every((partDef: BodyPartDefinition) => this.bodyTypes.get(want.job)?.includes(partDef.type))
         );
         if (matches.length > 0) {
@@ -144,6 +137,7 @@ export module CreepManagement {
         if (body) {
           const res = spawn.spawnCreep(body, want.job + Game.time);
           if (res === 0) {
+                      console.log("Spawning " + want.job + " with target " + want.memory.target.x+","+want.memory.target.y);
             return 1;
           }
         }
@@ -155,7 +149,7 @@ export module CreepManagement {
     private getWorkersById(id: Id<StructureController> | Id<StructureSpawn> | Id<ConstructionSite>): Creep[] {
       let workers: Creep[] = [];
       for (const creep of this.creeps) {
-        if (creep.memory.owner === id) {
+        if (creep.memory.owner === id && creep.ticksToLive! > 300) {
           workers.push(creep);
         }
       }

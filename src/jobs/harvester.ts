@@ -2,6 +2,7 @@
 export function run(creep: Creep, room: Room): void {
   const target = room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
   const source = room.lookForAt(LOOK_SOURCES, creep.memory.source.x, creep.memory.source.y)[0];
+  creep.say(target.pos.x + "," + target.pos.y);
   if (creep.store.getFreeCapacity() === 0 || tryEnergyDropOff(creep, target) === 0) {
     moveToDropEnergy(creep, target);
   } else if (creep.store.getUsedCapacity() === 0 || tryHarvest(creep, source) === -6) {

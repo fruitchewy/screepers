@@ -18,7 +18,11 @@ export function run(creep: Creep, room: Room): void {
 
   if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0 || tryBuild(creep, target) === 0) {
     moveToBuild(creep, target);
-  } else if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0 || tryBuild(creep, target) === ERR_NOT_ENOUGH_ENERGY) {
+  } else if (
+    creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0 ||
+    tryBuild(creep, target) === ERR_NOT_ENOUGH_ENERGY ||
+    tryHarvest(creep, source) === 0
+  ) {
     moveToHarvest(creep, source);
   } else if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
     moveToBuild(creep, target);

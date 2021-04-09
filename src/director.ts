@@ -97,15 +97,23 @@ export module CreepManagement {
         })
       );
 
-      for (const name in Game.constructionSites) {
-        const site = Game.constructionSites[name];
-        if (this.getWorkersById(site.id).length < 1) {
-          wants.push({
-            job: Job.Builder,
-            memory: { job: Job.Builder, source: this.room.find(FIND_SOURCES)[0].pos, target: site.pos, owner: site.id }
-          });
+      const sites = this.room.find(FIND_CONSTRUCTION_SITES).sort((a, b) => b.progress - a.progress);
+      for (let i = 0; i <= sites.length / 6; i++) {
+        if (sites[i] && this.getWorkersById(sites[i].id).length < 4) {
+          for (let j = 0; j < 4 - this.getWorkersById(sites[i].id).length; j++) {
+            wants.push({
+              job: Job.Builder,
+              memory: {
+                job: Job.Builder,
+                source: this.room.find(FIND_SOURCES)[0].pos,
+                target: sites[i].pos,
+                owner: sites[i].id
+              }
+            });
+          }
         }
       }
+
       return wants;
     }
 

@@ -5,14 +5,21 @@ import { JuiceController } from "goals/JuiceController";
 import { JuiceExtensions } from "goals/JuiceExtensions";
 import { JuiceSpawns } from "goals/JuiceSpawns";
 import { BuildRepair } from "goals/BuildRepair";
+import { BuildSites } from "goals/BuildSites";
+import { JuiceControllerSurplus } from "goals/JuiceControllerSurplus";
 
 export module CreepManagement {
   export class Director {
     room: Room;
     creeps: Creep[] = [];
-    goals: Goal[] = [JuiceController, JuiceExtensions, JuiceSpawns, BuildRepair].sort(
-      (a, b) => a.priority - b.priority
-    );
+    goals: Goal[] = [
+      JuiceController,
+      JuiceExtensions,
+      JuiceSpawns,
+      BuildRepair,
+      BuildSites,
+      JuiceControllerSurplus
+    ].sort((a, b) => a.priority - b.priority);
 
     constructor(room: Room) {
       this.room = room;

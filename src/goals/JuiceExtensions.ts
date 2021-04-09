@@ -9,7 +9,11 @@ export const JuiceExtensions: Goal = {
       });
       const liveWorkers = extensions.reduce((a, b) => a + getWorkersById(b.id, room).length, 0);
 
-      if (extensions.length > 0 && liveWorkers < extensions.length / 2) {
+      if (
+        extensions.length > 0 &&
+        liveWorkers < extensions.length / 2 &&
+        room.energyAvailable / room.energyCapacityAvailable < 0.95
+      ) {
         return true;
       }
       return false;
@@ -22,7 +26,7 @@ export const JuiceExtensions: Goal = {
     if (room.memory.cans) {
       //TODO: Jetcan Assignment [return]
     }
-    const source = _.sample(room.find(FIND_SOURCES_ACTIVE), 1)[0];
+    const source = room.find(FIND_SOURCES_ACTIVE)[0];
     const body = [WORK, CARRY, CARRY, MOVE, MOVE];
     const target = extensions.filter(ext => getWorkersById(ext.id, room).length === 0)[0];
 

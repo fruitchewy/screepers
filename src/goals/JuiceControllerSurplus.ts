@@ -1,15 +1,15 @@
 import { Job } from "Job";
 import { getWorkersById } from "./common";
 
-export const JuiceController: Goal = {
+export const JuiceControllerSurplus: Goal = {
   preconditions: [
     function (room: Room): boolean {
       const controller = room.find(FIND_MY_STRUCTURES, {
         filter: struct => struct.structureType === STRUCTURE_CONTROLLER
       })[0];
-      const liveWorkers = getWorkersById(controller.id, room).length;
+      const freeWorkers = room.find(FIND_MY_CREEPS, { filter: creep => creep.memory.job === Job.Idle }).length;
 
-      if (liveWorkers < 2) {
+      if (freeWorkers > 0 || room.energyAvailable / room.energyCapacityAvailable > 0.8) {
         return true;
       }
       return false;
@@ -37,5 +37,5 @@ export const JuiceController: Goal = {
     };
     return [assignment];
   },
-  priority: 4
+  priority: 10
 };

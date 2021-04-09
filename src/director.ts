@@ -12,7 +12,7 @@ export module CreepManagement {
   export class Director {
     room: Room;
     creeps: Creep[] = [];
-    goals: Goal[] = [JuiceController, JuiceExtensions, JuiceSpawns, BuildRepair, BuildSites].sort(
+    goals: Goal[] = [JuiceController, JuiceExtensions, JuiceSpawns, BuildRepair, BuildSites, JuiceControllerSurplus].sort(
       (a, b) => a.priority - b.priority
     );
 

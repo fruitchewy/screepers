@@ -1,4 +1,5 @@
-import { CreepManagement } from "../director";
+import { CreepManagement } from "director";
+import { Job } from "Job";
 
 // Runs all creep actions
 export function run(creep: Creep, room: Room): void {
@@ -10,7 +11,7 @@ export function run(creep: Creep, room: Room): void {
     : room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
   if ((target && target instanceof Structure && target.hits === target.hitsMax) || !source) {
     creep.memory.owner = creep.id;
-    creep.memory.job = CreepManagement.Job.Idle;
+    creep.memory.job = Job.Idle;
     return;
   } else {
     creep.say(target.pos.x + "," + target.pos.y);

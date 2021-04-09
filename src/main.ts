@@ -1,9 +1,8 @@
 import { ErrorMapper } from "utils/ErrorMapper";
-import { CreepManagement } from "./director";
+import { CreepManagement } from "director";
 import { Traveler } from "utils/Traveler";
+import { Job } from "Job";
 
-// When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
-// This utility uses source maps to get the line numbers and file names of the original, TS source code
 Traveler.init();
 
 export const loop = ErrorMapper.wrapLoop(() => {
@@ -21,10 +20,12 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
 declare global {
   interface CreepMemory {
-    job: CreepManagement.Job;
+    job: Job;
     source: RoomPosition;
     target: RoomPosition;
-    remaining?: number;
     owner: Id<any>;
+  }
+  interface RoomMemory {
+    cans?: RoomPosition[];
   }
 }

@@ -1,3 +1,4 @@
+import { Job } from "Job";
 import { CreepManagement } from "../director";
 // Runs all creep actions
 export function run(creep: Creep, room: Room): void {
@@ -6,7 +7,7 @@ export function run(creep: Creep, room: Room): void {
   if (tryEnergyDropOff(creep, target) == ERR_FULL || !target || !source) {
     console.log("Deassigning " + creep.name);
     creep.memory.owner = creep.id;
-    creep.memory.job = CreepManagement.Job.Idle;
+    creep.memory.job = Job.Idle;
     return;
   }
   if (

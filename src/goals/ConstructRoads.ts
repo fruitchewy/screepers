@@ -13,7 +13,7 @@ export const ConstructRoads: Goal = {
   ],
   getConstructionSites(room: Room): BuildRequest[] {
     const spawn = room.find(FIND_MY_SPAWNS)[0];
-    const source = room.find(FIND_SOURCES_ACTIVE)[0];
+    const source = room.find(FIND_SOURCES)[0];
     const controller = room.controller!;
 
     const path1 = findRoadPath(spawn.pos, source.pos, room);

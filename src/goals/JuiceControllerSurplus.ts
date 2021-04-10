@@ -9,7 +9,7 @@ export const JuiceControllerSurplus: Goal = {
       })[0];
       const freeWorkers = room.find(FIND_MY_CREEPS, { filter: creep => creep.memory.job === Job.Idle }).length;
 
-      if (room.energyCapacityAvailable >= 600 && room.energyAvailable / room.energyCapacityAvailable > 0.98) {
+      if (room.energyCapacityAvailable >= 600 && room.energyAvailable / room.energyCapacityAvailable > 0.95) {
         return true;
       }
       return false;

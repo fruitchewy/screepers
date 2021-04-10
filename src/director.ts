@@ -63,7 +63,6 @@ export module CreepManagement {
       const unallocated = this.allocateCreeps(assignments);
       const unsatisfied = this.spawnCreeps(unallocated);
       this.room.visual.text(assignments.length + "  assignments:\n", 10, 28);
-      this.room.visual.text(unallocated.length + " unallocated assignments:\n", 10, 24);
       this.room.visual.text(unsatisfied.length + " unsatisfied assignments:\n", 10, 20);
 
       this.creeps.forEach(c => this.runCreep(c));
@@ -84,7 +83,6 @@ export module CreepManagement {
           if (creep.memory.job && creep.memory.job != Job.Idle) {
             continue;
           }
-
           let avail: Map<BodyPartConstant, number> = new Map();
           for (const b of creep.body) {
             if (avail.has(b.type)) {
@@ -93,14 +91,14 @@ export module CreepManagement {
               avail.set(b.type, 1);
             }
           }
+          let match = true;
           for (const part of want.body) {
             if (!avail.has(part)) {
+              match = false;
               break;
             }
-
             avail.set(part, avail.get(part)! - 1);
           }
-          let match = true;
           for (const count of avail.values()) {
             if (count < 0) {
               match = false;
@@ -125,6 +123,7 @@ export module CreepManagement {
 
     private spawnCreeps(wants: Assignment[]): Assignment[] {
       const spawn = Game.spawns["Spawn1"];
+
       if (spawn.spawning || wants.length < 1) {
         return wants;
       }
@@ -135,6 +134,7 @@ export module CreepManagement {
           "Spawning " + wants[0].job + " with target " + wants[0].memory.target.x + "," + wants[0].memory.target.y
         );
         return wants.slice(1, wants.length);
+      } else {
       }
       return wants;
     }

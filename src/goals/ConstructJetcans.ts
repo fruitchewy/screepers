@@ -53,7 +53,6 @@ function findEmptyNear(pos: RoomPosition, room: Room): RoomPosition | void {
     [-1, 0],
     [-1, 1],
     [0, -1],
-    [0, 0],
     [0, 1],
     [1, -1],
     [1, 0],

@@ -33,7 +33,7 @@ export const JuiceSpawns: Goal = {
           body: [WORK, CARRY, CARRY, MOVE, MOVE],
           memory: {
             job: Job.Harvester,
-            source: room.find(FIND_SOURCES_ACTIVE)[0].pos,
+            source: room.find(FIND_SOURCES)[0].pos,
             target: spawn.pos,
             owner: spawn.id
           }

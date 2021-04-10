@@ -1,5 +1,5 @@
 import { Job } from "Job";
-import { getWorkersById } from "./common";
+import { getBuilderBody, getJuicerSource, getWorkersById } from "./common";
 
 export const BuilderSites: Goal = {
   preconditions: [
@@ -21,10 +21,10 @@ export const BuilderSites: Goal = {
       return [
         {
           job: Job.Builder,
-          body: body,
+          body: getBuilderBody(room),
           memory: {
             job: Job.Builder,
-            source: _.sample(room.find(FIND_SOURCES_ACTIVE), 1)[0].pos,
+            source: getJuicerSource(room),
             target: site.pos,
             owner: site.id
           }

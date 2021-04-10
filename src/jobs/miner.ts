@@ -4,6 +4,10 @@ export function run(creep: Creep, room: Room): void {
   const target = room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
   const source = room.lookForAt(LOOK_SOURCES, creep.memory.source.x, creep.memory.source.y)[0];
 
+  if (target.hitsMax - target.hits > 1000) {
+    creep.repair(target);
+  }
+
   if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
     moveToDropEnergy(creep, target);
   }

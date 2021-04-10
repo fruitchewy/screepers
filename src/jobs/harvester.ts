@@ -14,6 +14,11 @@ export function run(creep: Creep, room: Room): void {
       : room.lookForAt(LOOK_SOURCES, creep.memory.source.x, creep.memory.source.y)[0];
   const can = room.lookForAt(LOOK_STRUCTURES, creep.memory.source.x, creep.memory.source.y)[0];
 
+  if (creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1).length > 0 && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+    creep.pickup(creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1)[0]);
+    return;
+  }
+
   if (tryEnergyDropOff(creep, target) == ERR_FULL || !target || !source) {
     console.log("Deassigning " + creep.name);
     creep.memory.owner = creep.id;

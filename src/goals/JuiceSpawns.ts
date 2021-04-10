@@ -15,7 +15,7 @@ export const JuiceSpawns: Goal = {
         return true;
       }
 
-      if (liveWorkers < extensions / 5 + 2 && room.energyAvailable / room.energyCapacityAvailable < 100) {
+      if (liveWorkers < extensions / 5 + 1 && room.energyAvailable / room.energyCapacityAvailable < 100) {
         return true;
       }
       return false;

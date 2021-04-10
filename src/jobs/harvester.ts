@@ -47,8 +47,14 @@ function tryHarvest(creep: Creep, source: Source | StructureContainer): number {
 function moveToHarvest(creep: Creep, source: Source | StructureContainer, room: Room): void {
   switch (tryHarvest(creep, source)) {
     case ERR_NOT_IN_RANGE:
-      if (source instanceof StructureContainer && source.store.getFreeCapacity(RESOURCE_ENERGY) > 100)
-        creep.travelTo(source);
+      if (
+        creep.pos.getRangeTo(source) < 10 &&
+        source instanceof StructureContainer &&
+        source.store.getUsedCapacity(RESOURCE_ENERGY) <= 100
+      ) {
+        return;
+      }
+      creep.travelTo(source.pos);
       break;
     case ERR_INVALID_TARGET:
       creep.memory.source = room.find(FIND_SOURCES_ACTIVE)[0].pos;

@@ -1,5 +1,6 @@
 import * as harvester from "jobs/harvester";
 import * as builder from "jobs/builder";
+import * as idle from "jobs/idle";
 import { Job } from "Job";
 import { JuiceController } from "goals/JuiceController";
 import { JuiceExtensions } from "goals/JuiceExtensions";
@@ -27,7 +28,7 @@ export module CreepManagement {
 
       const builds = this.buildGoals.reduce((a, goal) => a.concat(goal.getConstructionSites && goal.preconditions.every(pre => pre(this.room) == true) ? goal.getConstructionSites(this.room): []), <BuildRequest[]>[])
       const activeSites = this.room.find(FIND_MY_CONSTRUCTION_SITES).length
-        builds.slice(0, 5-activeSites).forEach(req => this.room.createConstructionSite(req.pos, req.structureType) && console.log(req))
+      builds.slice(0, 5-activeSites).forEach(req => this.room.createConstructionSite(req.pos, req.structureType))
 
       const assignments = this.creepGoals.reduce(
         (a, goal) =>
@@ -48,6 +49,9 @@ export module CreepManagement {
           case Job.Builder:
             builder.run(creep, this.room);
             break;
+          case Job.Idle:
+            idle.run(creep, this.room);
+            break;
           default:
             break;
         }
@@ -67,7 +71,7 @@ export module CreepManagement {
         const matches = _.filter(
           this.creeps,
           (creep: Creep) =>
-            (!creep.memory.job || creep.memory.job == Job.Idle) &&
+            (!creep.memory.job || creep.memory.job === Job.Idle) &&
             creep.body.every((partDef: BodyPartDefinition) => want.body?.includes(partDef.type))
         );
         if (matches.length > 0) {

@@ -4,7 +4,13 @@ import { CreepManagement } from "../director";
 export function run(creep: Creep, room: Room): void {
   const target = room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
   const source = room.lookForAt(LOOK_SOURCES, creep.memory.source.x, creep.memory.source.y)[0];
-  if (tryEnergyDropOff(creep, target) == ERR_FULL || !target || !source) {
+  if (room.name != creep.memory.target.roomName) {
+    console.log(room.name +"+"+ creep.memory.target.roomName)
+    creep.travelTo(creep.memory.target)
+    return;
+  }
+
+  if (tryEnergyDropOff(creep, target) === ERR_FULL) {
     console.log("Deassigning " + creep.name);
     creep.memory.owner = creep.id;
     creep.memory.job = Job.Idle;
@@ -16,6 +22,7 @@ export function run(creep: Creep, room: Room): void {
   ) {
     moveToHarvest(creep, source, room);
   } else {
+
     moveToDropEnergy(creep, target);
   }
 }
@@ -25,8 +32,14 @@ function tryHarvest(creep: Creep, source: Source): number {
 }
 
 function moveToHarvest(creep: Creep, source: Source, room: Room): void {
-  if (tryHarvest(creep, source) === ERR_NOT_IN_RANGE && source.pos) {
-    creep.travelTo(source.pos);
+  switch (tryHarvest(creep, source)){
+    case ERR_NOT_IN_RANGE:
+      creep.travelTo(source);
+      break;
+    case ERR_INVALID_TARGET:
+      creep.memory.source = room.find(FIND_SOURCES_ACTIVE)[0].pos
+      break;
+    default:
   }
 }
 

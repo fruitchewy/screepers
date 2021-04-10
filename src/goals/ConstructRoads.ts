@@ -21,7 +21,6 @@ export const ConstructRoads: Goal = {
                         sites.push({pos: pos, structureType: STRUCTURE_ROAD})
                     }
         }
-                console.log("generated " + sites.length + " sites")
 
         return sites;
     },

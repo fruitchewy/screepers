@@ -1,5 +1,5 @@
 import { Job } from "Job";
-import { getJuicerBody, getJuicerSource, getWorkersById } from "./common";
+import { getBuilderBody, getJuicerBody, getJuicerSource, getWorkersById } from "./common";
 
 export const JuiceControllerSurplus: Goal = {
   preconditions: [
@@ -22,7 +22,7 @@ export const JuiceControllerSurplus: Goal = {
 
     const assignment: Assignment = {
       job: Job.Harvester,
-      body: getJuicerBody(room),
+      body: getBuilderBody(room),
       memory: {
         job: Job.Harvester,
         source: getJuicerSource(room),

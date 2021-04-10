@@ -1,7 +1,7 @@
 import { ErrorMapper } from "utils/ErrorMapper";
-import { CreepManagement } from "director";
 import { Traveler } from "utils/Traveler";
 import { Job } from "Job";
+import { RoomManagement } from "RoomManagement";
 
 Traveler.init();
 
@@ -13,7 +13,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     }
   }
   for (const room in Game.rooms) {
-    const roomDirector = new CreepManagement.Director(Game.rooms[room]);
+    const roomDirector = new RoomManagement.Director(Game.rooms[room]);
     roomDirector.run();
   }
 });

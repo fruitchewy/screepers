@@ -31,15 +31,6 @@ export function run(creep: Creep, room: Room): void {
 }
 
 function tryHarvest(creep: Creep, source: Source | StructureContainer): number {
-  const dropped = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 5);
-  if (dropped && dropped.length > 0) {
-    if (creep.pos.getRangeTo(dropped[0].pos) > 1) {
-      creep.travelTo(dropped[0].pos);
-      return 0;
-    }
-    console.log("picking up trash");
-    return creep.pickup(dropped[0]);
-  }
   if (source instanceof Source) {
     return creep.harvest(source);
   } else if (source instanceof StructureContainer) {
@@ -61,7 +52,11 @@ function moveToHarvest(creep: Creep, source: Source | StructureContainer, room: 
 }
 
 function tryEnergyDropOff(creep: Creep, target: Structure): number {
-  return creep.transfer(target, RESOURCE_ENERGY);
+  if (target.structureType === STRUCTURE_CONTROLLER) {
+    return creep.upgradeController(<StructureController>target);
+  } else {
+    return creep.transfer(target, RESOURCE_ENERGY);
+  }
 }
 
 function moveToDropEnergy(creep: Creep, target: Structure): void {

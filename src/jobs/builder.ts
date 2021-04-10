@@ -1,4 +1,4 @@
-import { CreepManagement } from "director";
+import { RoomManagement } from "RoomManagement";
 import { Job } from "Job";
 
 // Runs all creep actions

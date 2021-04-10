@@ -1,5 +1,5 @@
 import { Job } from "Job";
-import { getJuicerBody, getJuicerSource, getWorkersById } from "./common";
+import { getBuilderBody, getJuicerBody, getJuicerSource, getWorkersById } from "./common";
 
 export const JuiceController: Goal = {
   preconditions: [
@@ -9,7 +9,7 @@ export const JuiceController: Goal = {
       })[0];
       const liveWorkers = controller ? getWorkersById(controller?.id, room).length : 999;
 
-      if ((controller.level < 3 || controller.ticksToDowngrade < 5000) && liveWorkers < 2) {
+      if (liveWorkers < 2) {
         return true;
       }
       return false;
@@ -22,7 +22,7 @@ export const JuiceController: Goal = {
 
     const assignment: Assignment = {
       job: Job.Harvester,
-      body: getJuicerBody(room),
+      body: getBuilderBody(room),
       memory: {
         job: Job.Harvester,
         source: getJuicerSource(room),

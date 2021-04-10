@@ -26,36 +26,23 @@ export module CreepManagement {
     run() {
       this.loadCreeps();
 
+      //generate construction sites
       const builds = this.buildGoals.reduce((a, goal) => a.concat(goal.getConstructionSites && goal.preconditions.every(pre => pre(this.room) == true) ? goal.getConstructionSites(this.room): []), <BuildRequest[]>[])
       const activeSites = this.room.find(FIND_MY_CONSTRUCTION_SITES).length
       builds.slice(0, 5-activeSites).forEach(req => this.room.createConstructionSite(req.pos, req.structureType))
 
+      //generate creep assignments
       const assignments = this.creepGoals.reduce(
         (a, goal) =>
           a.concat(goal.getCreepAssignments && goal.preconditions.every(pre => pre(this.room) == true) ? goal.getCreepAssignments(this.room) : []),
         <Assignment[]>[]
       );
-      const unsatisfied = this.allocateCreeps(assignments);
-      const spawned = this.spawnCreeps(unsatisfied);
 
+      const unallocated = this.allocateCreeps(assignments);
+      const unsatisfied = this.spawnCreeps(unallocated);
+      this.room.visual.text(unsatisfied.length + " unsatisfied assignments:\n", 10, 20);
 
-      this.room.visual.text(unsatisfied.length + " unsatisfied assignments", 10, 20);
-
-      for (const creep of this.creeps) {
-        switch (creep.memory.job) {
-          case Job.Harvester:
-            harvester.run(creep, this.room);
-            break;
-          case Job.Builder:
-            builder.run(creep, this.room);
-            break;
-          case Job.Idle:
-            idle.run(creep, this.room);
-            break;
-          default:
-            break;
-        }
-      }
+      this.creeps.forEach(c => this.runCreep(c))
     }
 
     private loadCreeps() {
@@ -86,31 +73,40 @@ export module CreepManagement {
       return unsatisfied;
     }
 
-    private spawnCreeps(wants: Assignment[]): number {
+    private spawnCreeps(wants: Assignment[]): Assignment[] {
+      let unsatisfied : Assignment[] = []
       const spawn = Game.spawns["Spawn1"];
       if (spawn.spawning) {
-        return 0;
+        return wants;
       }
 
       for (const want of wants) {
         const res = spawn.spawnCreep(want.body, want.job + Game.time);
         if (res === 0) {
           console.log("Spawning " + want.job + " with target " + want.memory.target.x + "," + want.memory.target.y);
-          return 1;
+          continue;
         }
+        unsatisfied.push(want)
       }
 
-      return 0;
+      return unsatisfied;
     }
 
-    private getWorkersById(id: Id<any>): Creep[] {
-      let workers: Creep[] = [];
-      for (const creep of this.creeps) {
-        if (creep.memory.owner === id && creep.ticksToLive! > 300) {
-          workers.push(creep);
+    private runCreep(creep: Creep) : void {
+      switch (creep.memory.job) {
+          case Job.Harvester:
+            harvester.run(creep, this.room);
+            break;
+          case Job.Builder:
+            builder.run(creep, this.room);
+            break;
+          case Job.Idle:
+            idle.run(creep, this.room);
+            break;
+          default:
+            break;
         }
-      }
-      return workers;
+      
     }
   }
 }

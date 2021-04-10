@@ -32,7 +32,6 @@ export const BuilderSites: Goal = {
       ];
     }
 
-    console.log("Error generating builder assignments");
     return [];
   },
   priority: 5

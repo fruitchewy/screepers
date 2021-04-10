@@ -47,7 +47,8 @@ function tryHarvest(creep: Creep, source: Source | StructureContainer): number {
 function moveToHarvest(creep: Creep, source: Source | StructureContainer, room: Room): void {
   switch (tryHarvest(creep, source)) {
     case ERR_NOT_IN_RANGE:
-      creep.travelTo(source);
+      if (source instanceof StructureContainer && source.store.getFreeCapacity(RESOURCE_ENERGY) > 100)
+        creep.travelTo(source);
       break;
     case ERR_INVALID_TARGET:
       creep.memory.source = room.find(FIND_SOURCES_ACTIVE)[0].pos;
@@ -67,6 +68,8 @@ function tryEnergyDropOff(creep: Creep, target: Structure): number {
 function moveToDropEnergy(creep: Creep, target: Structure): void {
   if (tryEnergyDropOff(creep, target) === ERR_NOT_IN_RANGE) {
     //creep.moveTo(target.pos);
+    creep.travelTo(target.pos);
+  } else if (tryEnergyDropOff(creep, target) === 0 && creep.pos.getRangeTo(target) == 1) {
     creep.travelTo(target.pos);
   }
 }

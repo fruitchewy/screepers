@@ -15,7 +15,7 @@ export const JuiceControllerSurplus: Goal = {
       return false;
     }
   ],
-  getAssignments(room: Room): Assignment[] {
+  getCreepAssignments(room: Room): Assignment[] {
     const controller = room.find(FIND_STRUCTURES, {
       filter: struct => struct.structureType === STRUCTURE_CONTROLLER
     })[0];

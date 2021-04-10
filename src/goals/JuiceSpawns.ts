@@ -8,7 +8,9 @@ export const JuiceSpawns: Goal = {
         filter: struct => struct.structureType == STRUCTURE_EXTENSION
       }).length;
       const liveWorkers = room.find(FIND_MY_SPAWNS).reduce((a, b) => a + getWorkersById(b.id, room).length, 0);
-
+      if (room.find(FIND_MY_SPAWNS).length < 1 ){
+        return false;
+      }
       if (extensions === 0 && liveWorkers < 3) {
         return true;
       }
@@ -19,14 +21,14 @@ export const JuiceSpawns: Goal = {
       return false;
     }
   ],
-  getAssignments(room: Room): Assignment[] {
+  getCreepAssignments(room: Room): Assignment[] {
     const spawn = room.find(FIND_MY_SPAWNS)[0];
     if (room.memory.cans) {
       //TODO: Jetcan Assignment [return]
     }
     const source = room.find(FIND_SOURCES_ACTIVE)[0];
     let body = [WORK, CARRY, MOVE];
-    if (getWorkersById(spawn.id, room).length > 0) {
+    if (spawn && getWorkersById(spawn.id, room).length > 0) {
       body = [WORK, CARRY, CARRY, MOVE, MOVE];
     }
 

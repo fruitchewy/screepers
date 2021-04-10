@@ -9,12 +9,22 @@ export function run(creep: Creep, room: Room): void {
   target = room.lookForAt(LOOK_CONSTRUCTION_SITES, creep.memory.target.x, creep.memory.target.y)[0]
     ? room.lookForAt(LOOK_CONSTRUCTION_SITES, creep.memory.target.x, creep.memory.target.y)[0]
     : room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
-  if ((target && target instanceof Structure && target.hits === target.hitsMax) || !source) {
+  if (!source) {
     creep.memory.owner = creep.id;
     creep.memory.job = Job.Idle;
     return;
-  } else {
-    creep.say(target.pos.x + "," + target.pos.y);
+  } 
+  if (!(Game.getObjectById(target.id) instanceof ConstructionSite) && (<Structure<StructureConstant>>target).hits === (<Structure<StructureConstant>>target).hitsMax) {
+      target = _.sample(room.find(FIND_MY_CONSTRUCTION_SITES), 1)[0]
+      if (!target) {
+          console.log("failed to retarget builder "+ creep.name)
+        creep.memory.owner = creep.id;
+        creep.memory.job = Job.Idle;
+        return;
+      }
+      creep.memory.target = target.pos;
+      creep.memory.owner = target.id;
+      console.log("retargeted builder to "+ target.pos)
   }
 
   if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0 || tryBuild(creep, target) === 0) {

@@ -1,7 +1,7 @@
 import { Job } from "Job";
 import { getWorkersById } from "./common";
 
-export const BuildSites: Goal = {
+export const BuilderSites: Goal = {
   preconditions: [
     function (room: Room): boolean {
       const sites = room.find(FIND_MY_CONSTRUCTION_SITES);
@@ -9,10 +9,10 @@ export const BuildSites: Goal = {
       return sites.length > 0 && (builders < 4 || room.energyAvailable / room.energyCapacityAvailable > 0.7);
     }
   ],
-  getAssignments(room: Room): Assignment[] {
+  getCreepAssignments(room: Room): Assignment[] {
     const sites = room
       .find(FIND_MY_CONSTRUCTION_SITES)
-      .sort((a, b) => a.progress / a.progressTotal - b.progress / b.progressTotal);
+      .sort((a, b) => b.progress / b.progressTotal - a.progress / a.progressTotal);
     const body = [WORK, CARRY, CARRY, MOVE, MOVE];
     let assignments: Assignment[] = [];
 

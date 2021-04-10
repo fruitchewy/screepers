@@ -4,17 +4,19 @@ import { Job } from "Job";
 import { JuiceController } from "goals/JuiceController";
 import { JuiceExtensions } from "goals/JuiceExtensions";
 import { JuiceSpawns } from "goals/JuiceSpawns";
-import { BuildRepair } from "goals/BuildRepair";
-import { BuildSites } from "goals/BuildSites";
+import { BuilderRepair } from "goals/BuilderRepair";
+import { BuilderSites } from "goals/BuilderSites";
 import { JuiceControllerSurplus } from "goals/JuiceControllerSurplus";
+import { ConstructRoads } from "goals/ConstructRoads";
 
 export module CreepManagement {
   export class Director {
     room: Room;
     creeps: Creep[] = [];
-    goals: Goal[] = [JuiceController, JuiceExtensions, JuiceSpawns, BuildRepair, BuildSites, JuiceControllerSurplus].sort(
+    creepGoals: Goal[] = [JuiceController, JuiceExtensions, JuiceSpawns, BuilderRepair, BuilderSites, JuiceControllerSurplus].sort(
       (a, b) => a.priority - b.priority
     );
+    buildGoals: Goal[] = [ConstructRoads].sort((a, b) => a.priority - b.priority);
 
     constructor(room: Room) {
       this.room = room;
@@ -22,13 +24,19 @@ export module CreepManagement {
 
     run() {
       this.loadCreeps();
-      const assignments = this.goals.reduce(
+
+      const builds = this.buildGoals.reduce((a, goal) => a.concat(goal.getConstructionSites && goal.preconditions.every(pre => pre(this.room) == true) ? goal.getConstructionSites(this.room): []), <BuildRequest[]>[])
+      const activeSites = this.room.find(FIND_MY_CONSTRUCTION_SITES).length
+        builds.slice(0, 5-activeSites).forEach(req => this.room.createConstructionSite(req.pos, req.structureType) && console.log(req))
+
+      const assignments = this.creepGoals.reduce(
         (a, goal) =>
-          a.concat(goal.preconditions.every(pre => pre(this.room) == true) ? goal.getAssignments(this.room) : []),
+          a.concat(goal.getCreepAssignments && goal.preconditions.every(pre => pre(this.room) == true) ? goal.getCreepAssignments(this.room) : []),
         <Assignment[]>[]
       );
       const unsatisfied = this.allocateCreeps(assignments);
       const spawned = this.spawnCreeps(unsatisfied);
+
 
       this.room.visual.text(unsatisfied.length + " unsatisfied assignments", 10, 20);
 

@@ -73,6 +73,12 @@ interface Assignment {
 
 interface Goal {
   preconditions: ((room: Room) => boolean)[];
-  getAssignments(room: Room): Assignment[];
+  getCreepAssignments?(room: Room): Assignment[];
+  getConstructionSites?(room: Room): BuildRequest[];
   priority: number;
+}
+
+interface BuildRequest {
+  pos: RoomPosition;
+  structureType: BuildableStructureConstant;
 }

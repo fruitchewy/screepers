@@ -7,7 +7,7 @@ export const JuiceController: Goal = {
       const controller = room.find(FIND_MY_STRUCTURES, {
         filter: struct => struct.structureType === STRUCTURE_CONTROLLER
       })[0];
-      const liveWorkers = getWorkersById(controller.id, room).length;
+      const liveWorkers = controller?getWorkersById(controller?.id, room).length:999;
 
       if (liveWorkers < 2) {
         return true;
@@ -15,7 +15,7 @@ export const JuiceController: Goal = {
       return false;
     }
   ],
-  getAssignments(room: Room): Assignment[] {
+  getCreepAssignments(room: Room): Assignment[] {
     const controller = room.find(FIND_STRUCTURES, {
       filter: struct => struct.structureType === STRUCTURE_CONTROLLER
     })[0];

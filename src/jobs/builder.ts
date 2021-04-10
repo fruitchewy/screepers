@@ -58,7 +58,7 @@ function tryHarvest(creep: Creep, source: Source | StructureContainer): number {
 
 function moveToHarvest(creep: Creep, source: Source | StructureContainer): void {
   if (tryHarvest(creep, source) === ERR_NOT_IN_RANGE) {
-    creep.travelTo(source.pos);
+    creep.travelTo(source.pos, { ignoreCreeps: true });
   }
 }
 
@@ -72,8 +72,6 @@ function tryBuild(creep: Creep, target: ConstructionSite | Structure): number {
 
 function moveToBuild(creep: Creep, target: ConstructionSite | Structure): void {
   if (tryBuild(creep, target) === ERR_NOT_IN_RANGE) {
-    creep.travelTo(target.pos);
-  } else {
-    console.log("missing parts?? " + creep.name + tryBuild(creep, target));
+    creep.travelTo(target.pos, { ignoreCreeps: true });
   }
 }

@@ -22,7 +22,7 @@ function tryHarvest(creep: Creep, source: Source): number {
 
 function moveToHarvest(creep: Creep, source: Source, room: Room): void {
   if (tryHarvest(creep, source) === ERR_NOT_IN_RANGE && source.pos) {
-    creep.travelTo(source);
+    creep.travelTo(source.pos);
   }
 }
 

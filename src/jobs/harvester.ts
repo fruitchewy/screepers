@@ -22,7 +22,7 @@ export function run(creep: Creep, room: Room): void {
   }
   if (
     creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0 ||
-    (tryHarvest(creep, source) === 0 && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
+    (tryHarvest(creep, source) === 0 && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 50)
   ) {
     moveToHarvest(creep, source, room);
   } else {
@@ -31,6 +31,15 @@ export function run(creep: Creep, room: Room): void {
 }
 
 function tryHarvest(creep: Creep, source: Source | StructureContainer): number {
+  const dropped = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 5);
+  if (dropped && dropped.length > 0) {
+    if (creep.pos.getRangeTo(dropped[0].pos) > 1) {
+      creep.travelTo(dropped[0].pos);
+      return 0;
+    }
+    console.log("picking up trash");
+    return creep.pickup(dropped[0]);
+  }
   if (source instanceof Source) {
     return creep.harvest(source);
   } else if (source instanceof StructureContainer) {

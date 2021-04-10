@@ -5,6 +5,13 @@ export const BuilderRepair: Goal = {
   preconditions: [
     function (room: Room): boolean {
       return (
+        room.find(FIND_MY_CREEPS, {
+          filter: creep =>
+            creep.memory &&
+            creep.memory.job &&
+            creep.memory.job == Job.Builder &&
+            !(Game.getObjectById(creep.memory.owner) instanceof ConstructionSite)
+        }).length < 4 &&
         room.find(FIND_STRUCTURES, {
           filter: struct =>
             struct.hitsMax - struct.hits > 50 &&

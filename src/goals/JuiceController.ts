@@ -1,15 +1,15 @@
 import { Job } from "Job";
-import { getWorkersById } from "./common";
+import { getJuicerBody, getJuicerSource, getWorkersById } from "./common";
 
 export const JuiceController: Goal = {
   preconditions: [
     function (room: Room): boolean {
-      const controller = room.find(FIND_MY_STRUCTURES, {
+      const controller = <StructureController>room.find(FIND_MY_STRUCTURES, {
         filter: struct => struct.structureType === STRUCTURE_CONTROLLER
       })[0];
       const liveWorkers = controller ? getWorkersById(controller?.id, room).length : 999;
 
-      if (liveWorkers < 2) {
+      if ((controller.level < 3 || controller.ticksToDowngrade < 5000) && liveWorkers < 2) {
         return true;
       }
       return false;
@@ -19,22 +19,13 @@ export const JuiceController: Goal = {
     const controller = room.find(FIND_STRUCTURES, {
       filter: struct => struct.structureType === STRUCTURE_CONTROLLER
     })[0];
-    let source: RoomPosition;
-    let body: BodyPartConstant[];
-    if (room.memory.cans && room.memory.cans.length > 0) {
-      body = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE];
-      source = room.memory.cans[0];
-    } else {
-      body = [WORK, WORK, CARRY, MOVE];
-      source = room.find(FIND_SOURCES_ACTIVE)[0].pos;
-    }
 
     const assignment: Assignment = {
       job: Job.Harvester,
-      body: body,
+      body: getJuicerBody(room),
       memory: {
         job: Job.Harvester,
-        source: source,
+        source: getJuicerSource(room),
         target: controller.pos,
         owner: controller.id
       }

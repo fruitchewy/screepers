@@ -1,5 +1,6 @@
 export enum Job {
   Idle = "Idle",
   Harvester = "Harvester",
-  Builder = "Builder"
+  Builder = "Builder",
+  Miner = "Miner"
 }

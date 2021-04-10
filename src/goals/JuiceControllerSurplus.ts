@@ -1,5 +1,5 @@
 import { Job } from "Job";
-import { getWorkersById } from "./common";
+import { getJuicerSource, getWorkersById } from "./common";
 
 export const JuiceControllerSurplus: Goal = {
   preconditions: [
@@ -9,7 +9,7 @@ export const JuiceControllerSurplus: Goal = {
       })[0];
       const freeWorkers = room.find(FIND_MY_CREEPS, { filter: creep => creep.memory.job === Job.Idle }).length;
 
-      if (room.energyCapacityAvailable > 300 && room.energyAvailable / room.energyCapacityAvailable > 0.91) {
+      if (room.energyCapacityAvailable >= 600 && room.energyAvailable / room.energyCapacityAvailable > 0.98) {
         return true;
       }
       return false;
@@ -19,18 +19,20 @@ export const JuiceControllerSurplus: Goal = {
     const controller = room.find(FIND_STRUCTURES, {
       filter: struct => struct.structureType === STRUCTURE_CONTROLLER
     })[0];
-    if (room.memory.cans) {
-      //TODO: Jetcan Assignment [return]
+    let source: RoomPosition;
+    let body: BodyPartConstant[];
+    if (room.memory.cans && room.memory.cans.length > 0) {
+      body = [CARRY, CARRY, MOVE];
+    } else {
+      body = [WORK, CARRY, MOVE];
     }
-    const source = room.find(FIND_SOURCES_ACTIVE)[0];
-    const body = [WORK, CARRY, CARRY, MOVE, MOVE];
 
     const assignment: Assignment = {
       job: Job.Harvester,
       body: body,
       memory: {
         job: Job.Harvester,
-        source: source.pos,
+        source: getJuicerSource(room),
         target: controller.pos,
         owner: controller.id
       }

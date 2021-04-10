@@ -3,7 +3,11 @@ import { Job } from "Job";
 
 // Runs all creep actions
 export function run(creep: Creep, room: Room): void {
-  const source = room.lookForAt(LOOK_SOURCES, creep.memory.source.x, creep.memory.source.y)[0];
+  let source: Source | StructureContainer;
+  source =
+    room.memory.cans && room.lookForAt(LOOK_STRUCTURES, creep.memory.source.x, creep.memory.source.y).length === 1
+      ? <StructureContainer>room.lookForAt(LOOK_STRUCTURES, creep.memory.source.x, creep.memory.source.y)[0]
+      : room.lookForAt(LOOK_SOURCES, creep.memory.source.x, creep.memory.source.y)[0];
   let target: ConstructionSite | Structure;
   // Ensure we have either a construction site or a damaged structure
   target = room.lookForAt(LOOK_CONSTRUCTION_SITES, creep.memory.target.x, creep.memory.target.y)[0]
@@ -13,18 +17,21 @@ export function run(creep: Creep, room: Room): void {
     creep.memory.owner = creep.id;
     creep.memory.job = Job.Idle;
     return;
-  } 
-  if (!(Game.getObjectById(target.id) instanceof ConstructionSite) && (<Structure<StructureConstant>>target).hits === (<Structure<StructureConstant>>target).hitsMax) {
-      target = _.sample(room.find(FIND_MY_CONSTRUCTION_SITES), 1)[0]
-      if (!target) {
-          console.log("failed to retarget builder "+ creep.name)
-        creep.memory.owner = creep.id;
-        creep.memory.job = Job.Idle;
-        return;
-      }
-      creep.memory.target = target.pos;
-      creep.memory.owner = target.id;
-      console.log("retargeted builder to "+ target.pos)
+  }
+  if (
+    !(Game.getObjectById(target.id) instanceof ConstructionSite) &&
+    (<Structure<StructureConstant>>target).hits === (<Structure<StructureConstant>>target).hitsMax
+  ) {
+    target = _.sample(room.find(FIND_MY_CONSTRUCTION_SITES), 1)[0];
+    if (!target) {
+      console.log("failed to retarget builder " + creep.name);
+      creep.memory.owner = creep.id;
+      creep.memory.job = Job.Idle;
+      return;
+    }
+    creep.memory.target = target.pos;
+    creep.memory.owner = target.id;
+    console.log("retargeted builder to " + target.pos);
   }
 
   if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0 || tryBuild(creep, target) === 0) {
@@ -40,11 +47,16 @@ export function run(creep: Creep, room: Room): void {
   }
 }
 
-function tryHarvest(creep: Creep, source: Source): number {
-  return creep.harvest(source);
+function tryHarvest(creep: Creep, source: Source | StructureContainer): number {
+  if (source instanceof Source) {
+    return creep.harvest(source);
+  } else if (source instanceof StructureContainer) {
+    return creep.withdraw(source, RESOURCE_ENERGY, creep.store.getFreeCapacity(RESOURCE_ENERGY));
+  }
+  return -10;
 }
 
-function moveToHarvest(creep: Creep, source: Source): void {
+function moveToHarvest(creep: Creep, source: Source | StructureContainer): void {
   if (tryHarvest(creep, source) === ERR_NOT_IN_RANGE) {
     creep.travelTo(source.pos);
   }

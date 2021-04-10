@@ -1,5 +1,5 @@
 import { Job } from "Job";
-import { getWorkersById } from "./common";
+import { getJuicerBody, getJuicerSource, getWorkersById } from "./common";
 
 export const JuiceSpawns: Goal = {
   preconditions: [
@@ -8,14 +8,14 @@ export const JuiceSpawns: Goal = {
         filter: struct => struct.structureType == STRUCTURE_EXTENSION
       }).length;
       const liveWorkers = room.find(FIND_MY_SPAWNS).reduce((a, b) => a + getWorkersById(b.id, room).length, 0);
-      if (room.find(FIND_MY_SPAWNS).length < 1 ){
+      if (room.find(FIND_MY_SPAWNS).length < 1) {
         return false;
       }
       if (extensions === 0 && liveWorkers < 3) {
         return true;
       }
 
-      if (liveWorkers < extensions / 4 + 2 && room.energyAvailable / room.energyCapacityAvailable < 0.9) {
+      if (liveWorkers < extensions / 4 + 3 && room.energyAvailable / room.energyCapacityAvailable < 100) {
         return true;
       }
       return false;
@@ -23,21 +23,30 @@ export const JuiceSpawns: Goal = {
   ],
   getCreepAssignments(room: Room): Assignment[] {
     const spawn = room.find(FIND_MY_SPAWNS)[0];
-    if (room.memory.cans) {
-      //TODO: Jetcan Assignment [return]
-    }
-    const source = room.find(FIND_SOURCES_ACTIVE)[0];
-    let body = [WORK, CARRY, MOVE];
-    if (spawn && getWorkersById(spawn.id, room).length > 0) {
-      body = [WORK, CARRY, CARRY, MOVE, MOVE];
+
+    let source: RoomPosition;
+    let body: BodyPartConstant[];
+    if (getWorkersById(spawn.id, room).length == 0) {
+      return [
+        {
+          job: Job.Harvester,
+          body: [WORK, CARRY, CARRY, MOVE, MOVE],
+          memory: {
+            job: Job.Harvester,
+            source: room.find(FIND_SOURCES_ACTIVE)[0].pos,
+            target: spawn.pos,
+            owner: spawn.id
+          }
+        }
+      ];
     }
 
     const assignment: Assignment = {
       job: Job.Harvester,
-      body: body,
+      body: getJuicerBody(room),
       memory: {
         job: Job.Harvester,
-        source: source.pos,
+        source: getJuicerSource(room),
         target: spawn.pos,
         owner: spawn.id
       }

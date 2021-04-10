@@ -36,8 +36,6 @@ function moveToDropEnergy(creep: Creep, target: Structure): void {
   if (tryEnergyDropOff(creep, target) === ERR_NOT_IN_RANGE) {
     //creep.moveTo(target.pos);
     creep.travelTo(target, { ignoreCreeps: true });
-  } else if (tryEnergyDropOff(creep, target) === 0 && creep.pos.getRangeTo(target) == 1) {
-    creep.travelTo(target.pos);
   } else if (tryEnergyDropOff(creep, target) != 0) {
     console.log("fucky miner dropoff return code: " + tryEnergyDropOff(creep, target));
   }

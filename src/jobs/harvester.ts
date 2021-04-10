@@ -2,7 +2,7 @@ import { Job } from "Job";
 // Runs all creep actions
 export function run(creep: Creep, room: Room): void {
   const target = room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
-  if (room.name != creep.memory.target.roomName) {
+  if (creep.memory.target != undefined && room.name != creep.memory.target.roomName) {
     console.log(room.name + "+" + creep.memory.target.roomName);
     creep.travelTo(creep.memory.target);
     return;
@@ -74,6 +74,8 @@ function tryEnergyDropOff(creep: Creep, target: Structure): number {
 function moveToDropEnergy(creep: Creep, target: Structure): void {
   if (tryEnergyDropOff(creep, target) === ERR_NOT_IN_RANGE) {
     //creep.moveTo(target.pos);
+    creep.travelTo(target.pos);
+  } else if (tryEnergyDropOff(creep, target) === 0 && creep.pos.getRangeTo(target) == 1) {
     creep.travelTo(target.pos);
   }
 }

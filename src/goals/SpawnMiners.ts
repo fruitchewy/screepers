@@ -7,7 +7,7 @@ export const SpawnMiners: Goal = {
       return (
         room.memory.cans != undefined &&
         room.memory.cans.length >
-          room.find(FIND_MY_CREEPS, { filter: creep => creep.memory.job === Job.Miner }).length - 1 &&
+          room.find(FIND_MY_CREEPS, { filter: creep => creep.memory.job === Job.Miner }).length - 2 &&
         room.energyCapacityAvailable >= 550
       );
     }

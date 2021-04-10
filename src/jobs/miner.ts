@@ -8,7 +8,7 @@ export function run(creep: Creep, room: Room): void {
     creep.repair(target);
   }
 
-  if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+  if (creep.store.getFreeCapacity(RESOURCE_ENERGY) < 5) {
     moveToDropEnergy(creep, target);
   }
   if (tryHarvest(creep, source) === ERR_NOT_IN_RANGE) {
@@ -23,6 +23,8 @@ function tryHarvest(creep: Creep, source: Source): number {
 function moveToHarvest(creep: Creep, source: Source, room: Room): void {
   if (tryHarvest(creep, source) === ERR_NOT_IN_RANGE && source.pos) {
     creep.travelTo(source.pos);
+  } else {
+    console.log(tryHarvest(creep, source));
   }
 }
 
@@ -33,6 +35,8 @@ function tryEnergyDropOff(creep: Creep, target: Structure): number {
 function moveToDropEnergy(creep: Creep, target: Structure): void {
   if (tryEnergyDropOff(creep, target) === ERR_NOT_IN_RANGE) {
     //creep.moveTo(target.pos);
-    creep.travelTo(target.pos);
+    creep.travelTo(target, { ignoreCreeps: true });
+  } else if (tryEnergyDropOff(creep, target) != 0) {
+    console.log("fucky miner dropoff return code: " + tryEnergyDropOff(creep, target));
   }
 }

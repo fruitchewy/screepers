@@ -7,19 +7,39 @@ export const ConstructRoads: Goal = {
         room.controller &&
         room.controller.my &&
         room.controller.level >= 2 &&
-        room.find(FIND_MY_CONSTRUCTION_SITES).length < 5;
+        room.find(FIND_MY_CONSTRUCTION_SITES).length < 5 &&
+        room.find(FIND_MY_SPAWNS).length > 0;
       return res ? res : false;
     }
   ],
   getConstructionSites(room: Room): BuildRequest[] {
     const spawn = room.find(FIND_MY_SPAWNS)[0];
-    const source = room.find(FIND_SOURCES)[0];
+    const sources = room.find(FIND_SOURCES).map(a => a.pos);
+    const extensions = room
+      .find(FIND_MY_STRUCTURES, {
+        filter: struct => struct.structureType === STRUCTURE_EXTENSION
+      })
+      .map(a => a.pos);
+    const cans = room
+      .find(FIND_STRUCTURES, {
+        filter: struct => struct.structureType === STRUCTURE_CONTAINER
+      })
+      .map(a => a.pos);
     const controller = room.controller!;
 
-    const path1 = findRoadPath(spawn.pos, source.pos, room);
-    const path2 = findRoadPath(spawn.pos, controller.pos, room);
+    let path: RoomPosition[] = [];
+
+    for (const source of sources.concat(cans)) {
+      path = path.concat(findRoadPath(spawn.pos, source, room).path);
+    }
+    path = path.concat(findRoadPath(path[0], controller.pos, room).path);
+
+    if (extensions) {
+      path = path.concat(findRoadPath(path[0], extensions[0], room).path);
+    }
+
     let sites: BuildRequest[] = [];
-    for (let pos of path1.path.concat(path2.path)) {
+    for (let pos of path) {
       if (
         room.lookForAt(LOOK_STRUCTURES, pos).filter(struct => struct.structureType === STRUCTURE_ROAD).length < 1 &&
         room.lookForAt(LOOK_CONSTRUCTION_SITES, pos).filter(site => site.structureType === STRUCTURE_ROAD).length < 1

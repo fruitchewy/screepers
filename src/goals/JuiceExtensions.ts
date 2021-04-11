@@ -23,19 +23,23 @@ export const JuiceExtensions: Goal = {
       ext => ext.store.getFreeCapacity(RESOURCE_ENERGY) !== 0 && getWorkersById(ext.id, room).length === 0
     );
 
-    const target = nonEmptyIdleExtensions[0];
+    const target = nonEmptyIdleExtensions[0] ? nonEmptyIdleExtensions[0] : extensions[0];
 
-    const assignment: Assignment = {
-      job: Job.Harvester,
-      body: getJuicerBody(room),
-      memory: {
+    const source = getJuicerSource(room);
+    if (source) {
+      const assignment: Assignment = {
         job: Job.Harvester,
-        source: getJuicerSource(room),
-        target: target.pos,
-        owner: target.id
-      }
-    };
-    return [assignment];
+        body: getJuicerBody(room),
+        memory: {
+          job: Job.Harvester,
+          source: source,
+          target: target.pos,
+          owner: target.id
+        }
+      };
+      return [assignment];
+    }
+    return [];
   },
   priority: 3
 };

@@ -1,5 +1,6 @@
 import { RoomManagement } from "RoomManagement";
 import { Job } from "Job";
+import { getJuicerSource } from "goals/common";
 
 // Runs all creep actions
 export function run(creep: Creep, room: Room): void {
@@ -41,7 +42,7 @@ export function run(creep: Creep, room: Room): void {
     tryBuild(creep, target) === ERR_NOT_ENOUGH_ENERGY ||
     tryHarvest(creep, source) === 0
   ) {
-    moveToHarvest(creep, source);
+    moveToHarvest(creep, source, room);
   } else if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
     moveToBuild(creep, target);
   }
@@ -56,16 +57,25 @@ function tryHarvest(creep: Creep, source: Source | StructureContainer): number {
   return -10;
 }
 
-function moveToHarvest(creep: Creep, source: Source | StructureContainer): void {
-  if (tryHarvest(creep, source) === ERR_NOT_IN_RANGE) {
-    if (
-      creep.pos.getRangeTo(source) < 10 &&
-      source instanceof StructureContainer &&
-      source.store.getUsedCapacity(RESOURCE_ENERGY) <= 100
-    ) {
-      return;
-    }
-    creep.travelTo(source.pos);
+function moveToHarvest(creep: Creep, source: Source | StructureContainer, room: Room): void {
+  switch (tryHarvest(creep, source)) {
+    case ERR_NOT_IN_RANGE:
+      if (
+        creep.pos.getRangeTo(source) <= 4 &&
+        source instanceof StructureContainer &&
+        source.store.getUsedCapacity(RESOURCE_ENERGY) <= 100
+      ) {
+        return;
+      }
+      creep.travelTo(source.pos);
+      break;
+    case ERR_INVALID_TARGET:
+      creep.memory.source = room.find(FIND_SOURCES_ACTIVE)[0].pos;
+      break;
+    case ERR_NOT_ENOUGH_RESOURCES:
+      creep.memory.source = getJuicerSource(room)!;
+      break;
+    default:
   }
 }
 

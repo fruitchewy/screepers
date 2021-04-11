@@ -1,4 +1,5 @@
 import { Traveler } from "utils/Traveler";
+import { findEmptyNear } from "./common";
 
 export const ConstructJetcans: Goal = {
   preconditions: [
@@ -46,24 +47,3 @@ export const ConstructJetcans: Goal = {
   },
   priority: 2
 };
-
-function findEmptyNear(pos: RoomPosition, room: Room): RoomPosition | void {
-  const offsets: number[][] = [
-    [-1, -1],
-    [-1, 0],
-    [-1, 1],
-    [0, -1],
-    [0, 1],
-    [1, -1],
-    [1, 0],
-    [1, 1]
-  ];
-  for (const offset of offsets) {
-    const x = pos.x + offset[0];
-    const y = pos.y + offset[0];
-    if (room.getTerrain().get(x, y) != TERRAIN_MASK_WALL) {
-      return new RoomPosition(x, y, room.name);
-    }
-  }
-  console.log("Failed to find free site near: " + pos.x + "," + pos.y);
-}

@@ -1,10 +1,10 @@
 import { Job } from "Job";
 // Runs all creep actions
 export function run(creep: Creep, room: Room): void {
-  const target = room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
+  const target = <StructureContainer>room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
   const source = room.lookForAt(LOOK_SOURCES, creep.memory.source.x, creep.memory.source.y)[0];
 
-  if (target.hitsMax - target.hits > 1000) {
+  if (target && target.hitsMax - target.hits > 1000) {
     creep.repair(target);
   }
 
@@ -23,8 +23,6 @@ function tryHarvest(creep: Creep, source: Source): number {
 function moveToHarvest(creep: Creep, source: Source, room: Room): void {
   if (tryHarvest(creep, source) === ERR_NOT_IN_RANGE && source.pos) {
     creep.travelTo(source.pos);
-  } else {
-    console.log(tryHarvest(creep, source));
   }
 }
 
@@ -34,9 +32,8 @@ function tryEnergyDropOff(creep: Creep, target: Structure): number {
 
 function moveToDropEnergy(creep: Creep, target: Structure): void {
   if (tryEnergyDropOff(creep, target) === ERR_NOT_IN_RANGE) {
-    //creep.moveTo(target.pos);
-    creep.travelTo(target, { ignoreCreeps: true });
-  } else if (tryEnergyDropOff(creep, target) != 0) {
-    console.log("fucky miner dropoff return code: " + tryEnergyDropOff(creep, target));
+    creep.travelTo(target);
+  } else if (tryEnergyDropOff(creep, target) === 0 && creep.pos.getRangeTo(target) > 0) {
+    creep.travelTo(target);
   }
 }

@@ -46,7 +46,7 @@ export const JuiceSpawns: Goal = {
       body: getJuicerBody(room),
       memory: {
         job: Job.Harvester,
-        source: getJuicerSource(room),
+        source: getJuicerSource(room)!,
         target: spawn.pos,
         owner: spawn.id
       }

@@ -1,17 +1,27 @@
+import { getJuicerSource } from "goals/common";
 import { Job } from "Job";
 // Runs all creep actions
 export function run(creep: Creep, room: Room): void {
   const target = room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
-  if (creep.memory.target != undefined && room.name != creep.memory.target.roomName) {
-    console.log(room.name + "+" + creep.memory.target.roomName);
-    creep.travelTo(creep.memory.target);
+  if (room.name != creep.memory.target.roomName) {
+    creep.travelTo(Game.getObjectById(creep.memory.owner));
     return;
   }
   let source: Source | StructureContainer;
   source =
-    room.memory.cans && room.lookForAt(LOOK_STRUCTURES, creep.memory.source.x, creep.memory.source.y).length === 1
-      ? <StructureContainer>room.lookForAt(LOOK_STRUCTURES, creep.memory.source.x, creep.memory.source.y)[0]
-      : room.lookForAt(LOOK_SOURCES, creep.memory.source.x, creep.memory.source.y)[0];
+    room.find(FIND_STRUCTURES, {
+      filter: s =>
+        creep.memory.source.x == s.pos.x && creep.memory.source.y == s.pos.y && s.structureType === STRUCTURE_CONTAINER
+    }).length === 1
+      ? <StructureContainer>room.find(FIND_STRUCTURES, {
+          filter: s =>
+            creep.memory.source.x == s.pos.x &&
+            creep.memory.source.y == s.pos.y &&
+            s.structureType === STRUCTURE_CONTAINER
+        })[0]
+      : <Source>room.find(FIND_SOURCES, {
+          filter: s => creep.memory.source.x == s.pos.x && creep.memory.source.y == s.pos.y
+        })[0];
   const can = room.lookForAt(LOOK_STRUCTURES, creep.memory.source.x, creep.memory.source.y)[0];
 
   if (creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1).length > 0 && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
@@ -19,15 +29,16 @@ export function run(creep: Creep, room: Room): void {
     return;
   }
 
-  if (tryEnergyDropOff(creep, target) == ERR_FULL || !target || !source) {
-    console.log("Deassigning " + creep.name);
+  const drop = tryEnergyDropOff(creep, target);
+  if (drop === ERR_FULL || drop === ERR_INVALID_TARGET || drop === ERR_NOT_OWNER) {
+    console.log("Deassigning [" + drop + "]: " + creep.name);
     creep.memory.owner = creep.id;
     creep.memory.job = Job.Idle;
     return;
   }
   if (
-    creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0 ||
-    (tryHarvest(creep, source) === 0 && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 50)
+    creep.store.getUsedCapacity(RESOURCE_ENERGY) < 10 ||
+    (tryHarvest(creep, source) === 0 && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
   ) {
     moveToHarvest(creep, source, room);
   } else {
@@ -48,7 +59,7 @@ function moveToHarvest(creep: Creep, source: Source | StructureContainer, room: 
   switch (tryHarvest(creep, source)) {
     case ERR_NOT_IN_RANGE:
       if (
-        creep.pos.getRangeTo(source) < 10 &&
+        creep.pos.getRangeTo(source) <= 4 &&
         source instanceof StructureContainer &&
         source.store.getUsedCapacity(RESOURCE_ENERGY) <= 100
       ) {
@@ -58,6 +69,9 @@ function moveToHarvest(creep: Creep, source: Source | StructureContainer, room: 
       break;
     case ERR_INVALID_TARGET:
       creep.memory.source = room.find(FIND_SOURCES_ACTIVE)[0].pos;
+      break;
+    case ERR_NOT_ENOUGH_RESOURCES:
+      creep.memory.source = getJuicerSource(room)!;
       break;
     default:
   }

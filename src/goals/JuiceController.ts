@@ -7,6 +7,9 @@ export const JuiceController: Goal = {
       const controller = <StructureController>room.find(FIND_MY_STRUCTURES, {
         filter: struct => struct.structureType === STRUCTURE_CONTROLLER
       })[0];
+      if (!controller || !controller.my) {
+        return false;
+      }
       const liveWorkers = controller ? getWorkersById(controller?.id, room).length : 999;
 
       if (liveWorkers < 2) {
@@ -19,18 +22,21 @@ export const JuiceController: Goal = {
     const controller = room.find(FIND_STRUCTURES, {
       filter: struct => struct.structureType === STRUCTURE_CONTROLLER
     })[0];
-
-    const assignment: Assignment = {
-      job: Job.Harvester,
-      body: getBuilderBody(room),
-      memory: {
+    const source = getJuicerSource(room);
+    if (source) {
+      const assignment: Assignment = {
         job: Job.Harvester,
-        source: getJuicerSource(room),
-        target: controller.pos,
-        owner: controller.id
-      }
-    };
-    return [assignment];
+        body: getBuilderBody(room),
+        memory: {
+          job: Job.Harvester,
+          source: source,
+          target: controller.pos,
+          owner: controller.id
+        }
+      };
+      return [assignment];
+    }
+    return [];
   },
   priority: 4
 };

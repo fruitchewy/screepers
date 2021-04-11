@@ -6,6 +6,7 @@ import { Job } from "Job";
 import { JuiceController } from "goals/JuiceController";
 import { JuiceExtensions } from "goals/JuiceExtensions";
 import { JuiceSpawns } from "goals/JuiceSpawns";
+import { JuiceTowers } from "goals/JuiceTowers";
 import { BuilderRepair } from "goals/BuilderRepair";
 import { BuilderSites } from "goals/BuilderSites";
 import { JuiceControllerSurplus } from "goals/JuiceControllerSurplus";
@@ -14,6 +15,7 @@ import { ConstructJetcans } from "goals/ConstructJetcans";
 import { FlagJetcans } from "goals/FlagJetcans";
 import { SpawnMiners } from "goals/SpawnMiners";
 import { assign } from "lodash";
+import { getWorkersById } from "goals/common";
 
 export module RoomManagement {
   export class Director {
@@ -23,10 +25,11 @@ export module RoomManagement {
       JuiceController,
       JuiceExtensions,
       JuiceSpawns,
+      JuiceTowers,
       BuilderRepair,
       BuilderSites,
-      SpawnMiners,
-      JuiceControllerSurplus
+      SpawnMiners
+      //JuiceControllerSurplus
     ].sort((a, b) => a.priority - b.priority);
     buildGoals: Goal[] = [ConstructRoads, ConstructJetcans, FlagJetcans].sort((a, b) => a.priority - b.priority);
 
@@ -63,14 +66,28 @@ export module RoomManagement {
       const unallocated = this.allocateCreeps(assignments, this.creeps);
       const unsatisfied = this.spawnCreeps(unallocated);
       let idle = this.creeps.filter(creep => creep.memory.job === Job.Idle);
-      this.allocateCreeps(JuiceControllerSurplus.getCreepAssignments!(this.room), idle);
-      idle = this.creeps.filter(creep => creep.memory.job === Job.Idle);
+      if (
+        this.room.controller &&
+        this.room.controller.my &&
+        getWorkersById(this.room.controller.id, this.room).length < 6
+      ) {
+        this.allocateCreeps(JuiceControllerSurplus.getCreepAssignments!(this.room), idle);
+        idle = this.creeps.filter(creep => creep.memory.job === Job.Idle);
+      }
 
       this.room.visual.text(unsatisfied.length + " unsatisfied assignments", 10, 20);
       this.room.visual.text("" + (this.creeps.length - idle.length) + " active creeps", 10, 23);
       this.room.visual.text(idle.length + " idle creeps", 10, 26);
 
       this.creeps.forEach(c => this.runCreep(c));
+
+      const cannon = <StructureTower>(
+        this.room.find(FIND_MY_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_TOWER })[0]
+      );
+      const enemies = this.room.find(FIND_HOSTILE_CREEPS);
+      if (cannon && enemies) {
+        cannon.attack(enemies[0]);
+      }
     }
 
     private loadCreeps() {

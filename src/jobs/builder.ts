@@ -6,9 +6,19 @@ import { getJuicerSource } from "goals/common";
 export function run(creep: Creep, room: Room): void {
   let source: Source | StructureContainer;
   source =
-    room.memory.cans && room.lookForAt(LOOK_STRUCTURES, creep.memory.source.x, creep.memory.source.y).length === 1
-      ? <StructureContainer>room.lookForAt(LOOK_STRUCTURES, creep.memory.source.x, creep.memory.source.y)[0]
-      : room.lookForAt(LOOK_SOURCES, creep.memory.source.x, creep.memory.source.y)[0];
+    room.find(FIND_STRUCTURES, {
+      filter: s =>
+        creep.memory.source.x == s.pos.x && creep.memory.source.y == s.pos.y && s.structureType === STRUCTURE_CONTAINER
+    }).length === 1
+      ? <StructureContainer>room.find(FIND_STRUCTURES, {
+          filter: s =>
+            creep.memory.source.x == s.pos.x &&
+            creep.memory.source.y == s.pos.y &&
+            s.structureType === STRUCTURE_CONTAINER
+        })[0]
+      : <Source>room.find(FIND_SOURCES, {
+          filter: s => creep.memory.source.x == s.pos.x && creep.memory.source.y == s.pos.y
+        })[0];
   let target: ConstructionSite | Structure;
   // Ensure we have either a construction site or a damaged structure
   target = room.lookForAt(LOOK_CONSTRUCTION_SITES, creep.memory.target.x, creep.memory.target.y)[0]

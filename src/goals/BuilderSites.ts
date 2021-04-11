@@ -1,4 +1,5 @@
 import { Job } from "Job";
+import { max, min } from "lodash";
 import { getBuilderBody, getJuicerSource, getWorkersById } from "./common";
 
 export const BuilderSites: Goal = {
@@ -6,7 +7,7 @@ export const BuilderSites: Goal = {
     function (room: Room): boolean {
       const sites = room.find(FIND_MY_CONSTRUCTION_SITES);
       const builders = sites.reduce((a, b) => a + getWorkersById(b.id, room).length, 0);
-      return sites.length > 0 && (builders < 4 || room.energyAvailable / room.energyCapacityAvailable > 0.7);
+      return sites.length > 0 && builders < _.max([4, _.min([8, sites.length])]);
     }
   ],
   getCreepAssignments(room: Room): Assignment[] {
@@ -24,7 +25,7 @@ export const BuilderSites: Goal = {
           body: getBuilderBody(room),
           memory: {
             job: Job.Builder,
-            source: getJuicerSource(room),
+            source: getJuicerSource(room)!,
             target: site.pos,
             owner: site.id
           }

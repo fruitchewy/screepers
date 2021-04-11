@@ -5,21 +5,13 @@ import { getJuicerSource } from "goals/common";
 // Runs all creep actions
 export function run(creep: Creep, room: Room): void {
   let source: Source | StructureContainer;
-  source =
-    room.find(FIND_STRUCTURES, {
+  source = <StructureContainer>room.find(FIND_STRUCTURES, {
       filter: s =>
         creep.memory.source.x == s.pos.x && creep.memory.source.y == s.pos.y && s.structureType === STRUCTURE_CONTAINER
-    }).length === 1
-      ? <StructureContainer>room.find(FIND_STRUCTURES, {
-          filter: s =>
-            creep.memory.source.x == s.pos.x &&
-            creep.memory.source.y == s.pos.y &&
-            s.structureType === STRUCTURE_CONTAINER
-        })[0]
-      : <Source>room.find(FIND_SOURCES, {
-          filter: s => creep.memory.source.x == s.pos.x && creep.memory.source.y == s.pos.y
-        })[0];
-  let target: ConstructionSite | Structure;
+    })[0] ?? <Source>room.find(FIND_SOURCES, {
+      filter: s => creep.memory.source.x == s.pos.x && creep.memory.source.y == s.pos.y
+    })[0];
+  let target: ConstructionSite | Structure | null;
   // Ensure we have either a construction site or a damaged structure
   target = room.lookForAt(LOOK_CONSTRUCTION_SITES, creep.memory.target.x, creep.memory.target.y)[0]
     ? room.lookForAt(LOOK_CONSTRUCTION_SITES, creep.memory.target.x, creep.memory.target.y)[0]
@@ -33,16 +25,20 @@ export function run(creep: Creep, room: Room): void {
     !(Game.getObjectById(target.id) instanceof ConstructionSite) &&
     (<Structure<StructureConstant>>target).hits === (<Structure<StructureConstant>>target).hitsMax
   ) {
-    target = _.sample(room.find(FIND_MY_CONSTRUCTION_SITES), 1)[0];
+    target =
+      creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES) ??
+      creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        filter: struct => struct.hitsMax - struct.hits > 100 && struct.hits < 100000
+      });
     if (!target) {
       console.log("failed to retarget builder " + creep.name);
       creep.memory.owner = creep.id;
       creep.memory.job = Job.Idle;
       return;
+    } else {
+      creep.memory.owner = target.id;
+      creep.memory.target = target.pos;
     }
-    creep.memory.target = target.pos;
-    creep.memory.owner = target.id;
-    console.log("retargeted builder to " + target.pos);
   }
 
   if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0 || tryBuild(creep, target) === 0) {

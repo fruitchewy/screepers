@@ -6,15 +6,11 @@ export const BuilderRepair: Goal = {
     function (room: Room): boolean {
       return (
         room.find(FIND_MY_CREEPS, {
-          filter: creep =>
-            creep.memory &&
-            creep.memory.job &&
-            creep.memory.job == Job.Builder &&
-            !(Game.getObjectById(creep.memory.owner) instanceof ConstructionSite)
-        }).length < 4 &&
+          filter: creep => creep.memory && creep.memory.job && creep.memory.job == Job.Builder
+        }).length < 1 &&
         room.find(FIND_STRUCTURES, {
           filter: struct =>
-            struct.hitsMax - struct.hits > 50 &&
+            struct.hitsMax - struct.hits > 100 &&
             getWorkersById(struct.id, room).length === 0 &&
             struct.structureType != STRUCTURE_CONTAINER &&
             struct.hits < 50000

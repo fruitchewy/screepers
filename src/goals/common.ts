@@ -1,7 +1,7 @@
 import { Job } from "Job";
 
 export function getWorkersById(id: Id<any>, room: Room): Creep[] {
-  return room.find(FIND_CREEPS, { filter: creep => creep?.memory?.owner === id && creep?.ticksToLive! > 175 });
+  return room.find(FIND_CREEPS, { filter: creep => creep?.memory?.owner === id && creep?.ticksToLive! > 100 });
 }
 
 export function getJuicerBody(room: Room): BodyPartConstant[] {
@@ -12,6 +12,9 @@ export function getJuicerBody(room: Room): BodyPartConstant[] {
     );
     if (getWorkersById(cans[0].id, room).length > 0) {
       body = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE];
+      for (let i = 0; i < (room.energyCapacityAvailable - 300) / 150; i++) {
+        body.push(CARRY, MOVE);
+      }
     }
   }
   return body;
@@ -25,7 +28,18 @@ export function getBuilderBody(room: Room): BodyPartConstant[] {
     );
     if (getWorkersById(cans[0].id, room).length > 0) {
       body = [WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE];
+      for (let i = 0; i < (room.energyCapacityAvailable - 450) / 150; i++) {
+        body.push(CARRY, MOVE);
+      }
     }
+  }
+  return body;
+}
+
+export function getMinerBody(room: Room): BodyPartConstant[] {
+  let body: BodyPartConstant[] = [WORK, WORK, WORK, WORK, CARRY, CARRY, MOVE];
+  for (let i = 0; i < (room.energyCapacityAvailable - 550) / 100; i++) {
+    body.push(WORK);
   }
   return body;
 }
@@ -72,4 +86,17 @@ export function findEmptyNear(pos: RoomPosition, room: Room): RoomPosition | und
   }
   console.log("Failed to find free site near: " + pos.x + "," + pos.y);
   return;
+}
+
+export function getEnergySink(room: Room, near?: RoomPosition): StructureSpawn | StructureExtension | undefined {
+  if (near) {
+    return <StructureExtension>near.findClosestByPath(FIND_MY_STRUCTURES, {
+        filter: struct =>
+          struct.structureType == STRUCTURE_EXTENSION && struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+      }) ?? <StructureSpawn>near.findClosestByPath(FIND_MY_SPAWNS, { filter: struct => struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0 });
+  }
+
+  return <StructureExtension>room.find(FIND_MY_STRUCTURES, {
+      filter: struct => struct.structureType == STRUCTURE_EXTENSION && struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+    })[0] ?? <StructureSpawn>room.find(FIND_MY_SPAWNS, { filter: struct => struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0 })[0];
 }

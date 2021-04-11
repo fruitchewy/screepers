@@ -4,15 +4,13 @@ import { getBuilderBody, getJuicerBody, getJuicerSource, getWorkersById } from "
 export const JuiceController: Goal = {
   preconditions: [
     function (room: Room): boolean {
-      const controller = <StructureController>room.find(FIND_MY_STRUCTURES, {
-        filter: struct => struct.structureType === STRUCTURE_CONTROLLER
-      })[0];
+      const controller = room.controller;
       if (!controller || !controller.my) {
         return false;
       }
-      const liveWorkers = controller ? getWorkersById(controller?.id, room).length : 999;
+      const liveWorkers = getWorkersById(controller?.id, room).length;
 
-      if (liveWorkers < 2) {
+      if (liveWorkers < 8) {
         return true;
       }
       return false;

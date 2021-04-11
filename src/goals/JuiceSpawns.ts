@@ -16,7 +16,7 @@ export const JuiceSpawns: Goal = {
         return true;
       }
 
-      if (liveWorkers < extensions / 5 + 1 && spawns[0].store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+      if (liveWorkers < extensions / 5 && spawns[0].store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
         return true;
       }
       return false;

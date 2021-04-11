@@ -11,7 +11,7 @@ export const JuiceExtensions: Goal = {
       const nonEmptyIdleExtensions = extensions.filter(
         ext => ext.store.getFreeCapacity(RESOURCE_ENERGY) !== 0 && getWorkersById(ext.id, room).length === 0
       );
-      return liveWorkers < extensions.length / 3 && room.energyAvailable / room.energyCapacityAvailable < 1;
+      return liveWorkers < _.ceil(extensions.length / 10) && room.energyAvailable / room.energyCapacityAvailable < 1;
     }
   ],
   getCreepAssignments(room: Room): Assignment[] {

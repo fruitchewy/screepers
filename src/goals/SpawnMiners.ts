@@ -1,7 +1,7 @@
 import { Job } from "Job";
-import { getWorkersById } from "./common";
+import { getMinerBody, getWorkersById } from "./common";
 
-const MINERS_PER_CAN = 2;
+const MINERS_PER_CAN = 1;
 
 export const SpawnMiners: Goal = {
   preconditions: [
@@ -15,7 +15,6 @@ export const SpawnMiners: Goal = {
     }
   ],
   getCreepAssignments(room: Room): Assignment[] {
-    const body = [WORK, WORK, WORK, WORK, CARRY, CARRY, MOVE];
     let assignments: Assignment[] = [];
     for (const canPos of room.memory.cans!) {
       const can = room.find(FIND_STRUCTURES, {
@@ -28,7 +27,7 @@ export const SpawnMiners: Goal = {
       if (getWorkersById(can.id, room).filter(worker => worker.memory.job === Job.Miner).length < MINERS_PER_CAN)
         assignments.push({
           job: Job.Miner,
-          body: body,
+          body: getMinerBody(room),
           memory: {
             job: Job.Miner,
             source: source,

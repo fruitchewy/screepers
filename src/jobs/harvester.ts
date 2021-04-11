@@ -1,4 +1,4 @@
-import { getJuicerSource } from "goals/common";
+import { getEnergySink, getJuicerSource } from "goals/common";
 import { Job } from "Job";
 // Runs all creep actions
 export function run(creep: Creep, room: Room): void {
@@ -30,11 +30,21 @@ export function run(creep: Creep, room: Room): void {
   }
 
   const drop = tryEnergyDropOff(creep, target);
-  if (drop === ERR_FULL || drop === ERR_INVALID_TARGET || drop === ERR_NOT_OWNER) {
+  if (drop === ERR_INVALID_TARGET || drop === ERR_NOT_OWNER) {
     console.log("Deassigning [" + drop + "]: " + creep.name + " -> " + JSON.stringify(creep.memory.target));
     creep.memory.owner = creep.id;
     creep.memory.job = Job.Idle;
     return;
+  } else if (drop === ERR_FULL) {
+    const target = getEnergySink(room, creep.pos);
+    if (target) {
+      creep.memory.owner = target.id;
+      creep.memory.target = target.pos;
+    } else {
+      console.log("Deassigning [" + drop + "]: " + creep.name + " -> " + JSON.stringify(creep.memory.target));
+      creep.memory.owner = creep.id;
+      creep.memory.job = Job.Idle;
+    }
   }
   if (
     creep.store.getUsedCapacity(RESOURCE_ENERGY) < 10 ||

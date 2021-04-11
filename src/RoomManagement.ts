@@ -42,7 +42,7 @@ export module RoomManagement {
 
     run() {
       this.loadCreeps();
-      if (Game.time % 6 == 0) {
+      if (Game.time % 1 == 0) {
         //generate construction sites
         const builds = this.buildGoals.reduce(
           (a, goal) =>
@@ -68,19 +68,15 @@ export module RoomManagement {
         );
         const unallocated = this.allocateCreeps(assignments, this.creeps);
         const unsatisfied = this.spawnCreeps(unallocated);
+
         let idle = this.creeps.filter(creep => creep.memory.job === Job.Idle);
-        if (
-          this.room.controller &&
-          this.room.controller.my &&
-          getWorkersById(this.room.controller.id, this.room).length < 15
-        ) {
-          this.allocateCreeps(JuiceControllerSurplus.getCreepAssignments!(this.room), idle);
-          idle = this.creeps.filter(creep => creep.memory.job === Job.Idle);
-        }
 
         this.room.visual.text(unsatisfied.length + " unsatisfied assignments", 10, 20);
         this.room.visual.text("" + (this.creeps.length - idle.length) + " active creeps", 10, 23);
         this.room.visual.text(idle.length + " idle creeps", 10, 26);
+        if (unsatisfied.length > 0) {
+          this.room.visual.text(unsatisfied[0]?.job + " => " + JSON.stringify(unsatisfied[0]?.memory.target), 10, 29);
+        }
       }
       this.creeps.forEach(c => this.runCreep(c));
 

@@ -16,6 +16,7 @@ import { FlagJetcans } from "goals/FlagJetcans";
 import { SpawnMiners } from "goals/SpawnMiners";
 import { assign } from "lodash";
 import { getWorkersById } from "goals/common";
+import { FlagAnnexes } from "goals/FlagAnnexes";
 
 export module RoomManagement {
   export class Director {
@@ -31,7 +32,9 @@ export module RoomManagement {
       SpawnMiners
       //JuiceControllerSurplus
     ].sort((a, b) => a.priority - b.priority);
-    buildGoals: Goal[] = [ConstructRoads, ConstructJetcans, FlagJetcans].sort((a, b) => a.priority - b.priority);
+    buildGoals: Goal[] = [ConstructRoads, ConstructJetcans, FlagJetcans, FlagAnnexes].sort(
+      (a, b) => a.priority - b.priority
+    );
 
     constructor(room: Room) {
       this.room = room;
@@ -39,46 +42,46 @@ export module RoomManagement {
 
     run() {
       this.loadCreeps();
+      if (Game.time % 6 == 0) {
+        //generate construction sites
+        const builds = this.buildGoals.reduce(
+          (a, goal) =>
+            a.concat(
+              goal.getConstructionSites && goal.preconditions.every(pre => pre(this.room) == true)
+                ? goal.getConstructionSites(this.room)
+                : []
+            ),
+          <BuildRequest[]>[]
+        );
+        const activeSites = this.room.find(FIND_MY_CONSTRUCTION_SITES).length;
+        builds.slice(0, 5 - activeSites).forEach(req => this.room.createConstructionSite(req.pos, req.structureType));
 
-      //generate construction sites
-      const builds = this.buildGoals.reduce(
-        (a, goal) =>
-          a.concat(
-            goal.getConstructionSites && goal.preconditions.every(pre => pre(this.room) == true)
-              ? goal.getConstructionSites(this.room)
-              : []
-          ),
-        <BuildRequest[]>[]
-      );
-      const activeSites = this.room.find(FIND_MY_CONSTRUCTION_SITES).length;
-      builds.slice(0, 5 - activeSites).forEach(req => this.room.createConstructionSite(req.pos, req.structureType));
+        //generate creep assignments
+        const assignments = this.creepGoals.reduce(
+          (a, goal) =>
+            a.concat(
+              goal.getCreepAssignments && goal.preconditions.every(pre => pre(this.room) == true)
+                ? goal.getCreepAssignments(this.room)
+                : []
+            ),
+          <Assignment[]>[]
+        );
+        const unallocated = this.allocateCreeps(assignments, this.creeps);
+        const unsatisfied = this.spawnCreeps(unallocated);
+        let idle = this.creeps.filter(creep => creep.memory.job === Job.Idle);
+        if (
+          this.room.controller &&
+          this.room.controller.my &&
+          getWorkersById(this.room.controller.id, this.room).length < 15
+        ) {
+          this.allocateCreeps(JuiceControllerSurplus.getCreepAssignments!(this.room), idle);
+          idle = this.creeps.filter(creep => creep.memory.job === Job.Idle);
+        }
 
-      //generate creep assignments
-      const assignments = this.creepGoals.reduce(
-        (a, goal) =>
-          a.concat(
-            goal.getCreepAssignments && goal.preconditions.every(pre => pre(this.room) == true)
-              ? goal.getCreepAssignments(this.room)
-              : []
-          ),
-        <Assignment[]>[]
-      );
-      const unallocated = this.allocateCreeps(assignments, this.creeps);
-      const unsatisfied = this.spawnCreeps(unallocated);
-      let idle = this.creeps.filter(creep => creep.memory.job === Job.Idle);
-      if (
-        this.room.controller &&
-        this.room.controller.my &&
-        getWorkersById(this.room.controller.id, this.room).length < 6
-      ) {
-        this.allocateCreeps(JuiceControllerSurplus.getCreepAssignments!(this.room), idle);
-        idle = this.creeps.filter(creep => creep.memory.job === Job.Idle);
+        this.room.visual.text(unsatisfied.length + " unsatisfied assignments", 10, 20);
+        this.room.visual.text("" + (this.creeps.length - idle.length) + " active creeps", 10, 23);
+        this.room.visual.text(idle.length + " idle creeps", 10, 26);
       }
-
-      this.room.visual.text(unsatisfied.length + " unsatisfied assignments", 10, 20);
-      this.room.visual.text("" + (this.creeps.length - idle.length) + " active creeps", 10, 23);
-      this.room.visual.text(idle.length + " idle creeps", 10, 26);
-
       this.creeps.forEach(c => this.runCreep(c));
 
       const cannon = <StructureTower>(

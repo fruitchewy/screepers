@@ -7,7 +7,8 @@ export const JuiceSpawns: Goal = {
       const extensions = room.find(FIND_MY_STRUCTURES, {
         filter: struct => struct.structureType == STRUCTURE_EXTENSION
       }).length;
-      const liveWorkers = room.find(FIND_MY_SPAWNS).reduce((a, b) => a + getWorkersById(b.id, room).length, 0);
+      const spawns = room.find(FIND_MY_SPAWNS);
+      const liveWorkers = spawns.reduce((a, b) => a + getWorkersById(b.id, room).length, 0);
       if (room.find(FIND_MY_SPAWNS).length < 1) {
         return false;
       }
@@ -15,7 +16,7 @@ export const JuiceSpawns: Goal = {
         return true;
       }
 
-      if (liveWorkers < extensions / 5 + 1 && room.energyAvailable / room.energyCapacityAvailable < 100) {
+      if (liveWorkers < extensions / 5 + 1 && spawns[0].store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
         return true;
       }
       return false;

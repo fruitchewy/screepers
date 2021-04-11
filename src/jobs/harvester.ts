@@ -31,7 +31,7 @@ export function run(creep: Creep, room: Room): void {
 
   const drop = tryEnergyDropOff(creep, target);
   if (drop === ERR_FULL || drop === ERR_INVALID_TARGET || drop === ERR_NOT_OWNER) {
-    console.log("Deassigning [" + drop + "]: " + creep.name);
+    console.log("Deassigning [" + drop + "]: " + creep.name + " -> " + JSON.stringify(creep.memory.target));
     creep.memory.owner = creep.id;
     creep.memory.job = Job.Idle;
     return;

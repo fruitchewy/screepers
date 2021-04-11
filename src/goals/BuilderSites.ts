@@ -7,7 +7,7 @@ export const BuilderSites: Goal = {
     function (room: Room): boolean {
       const sites = room.find(FIND_MY_CONSTRUCTION_SITES);
       const builders = sites.reduce((a, b) => a + getWorkersById(b.id, room).length, 0);
-      return sites.length > 0 && builders < _.max([4, _.min([8, sites.length])]);
+      return sites.length > 0 && builders < 5;
     }
   ],
   getCreepAssignments(room: Room): Assignment[] {

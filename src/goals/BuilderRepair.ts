@@ -30,18 +30,16 @@ export const BuilderRepair: Goal = {
     let assignments: Assignment[] = [];
     const source = getJuicerSource(room);
     if (source) {
-      structures.slice(0, 5).forEach(struct =>
-        assignments.push({
+      assignments.push({
+        job: Job.Builder,
+        body: getBuilderBody(room),
+        memory: {
           job: Job.Builder,
-          body: getBuilderBody(room),
-          memory: {
-            job: Job.Builder,
-            source: source,
-            target: struct.pos,
-            owner: struct.id
-          }
-        })
-      );
+          source: source,
+          target: structures[0].pos,
+          owner: structures[0].id
+        }
+      });
       return assignments;
     }
     return [];

@@ -1,8 +1,9 @@
 import { Job } from "Job";
-import { getJuicerBody, getJuicerSource, getWorkersById } from "./common";
+import { getJuicerBody, getJuicerSource, getWorkersById, hasActiveEnergy } from "./common";
 
 export const JuiceSpawns: Goal = {
   preconditions: [
+    hasActiveEnergy,
     function (room: Room): boolean {
       const extensions = room.find(FIND_MY_STRUCTURES, {
         filter: struct => struct.structureType == STRUCTURE_EXTENSION
@@ -16,7 +17,7 @@ export const JuiceSpawns: Goal = {
         return true;
       }
 
-      if (liveWorkers < extensions / 5 && spawns[0].store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+      if (liveWorkers < 1 && spawns[0].store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
         return true;
       }
       return false;

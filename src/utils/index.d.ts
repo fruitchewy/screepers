@@ -52,7 +52,7 @@ interface TravelState {
 
 interface Creep {
   travelTo(destination: HasPos | RoomPosition, ops?: TravelToOptions): number;
-  makeIdle(): void;
+  makeIdle(changeOwner: boolean): void;
 }
 
 interface CreepMemory {

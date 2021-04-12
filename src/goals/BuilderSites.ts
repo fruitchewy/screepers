@@ -1,9 +1,10 @@
 import { Job } from "Job";
 import { max, min } from "lodash";
-import { getBuilderBody, getJuicerSource, getWorkersById } from "./common";
+import { getBuilderBody, getJuicerSource, getWorkersById, hasActiveEnergy } from "./common";
 
 export const BuilderSites: Goal = {
   preconditions: [
+    hasActiveEnergy,
     function (room: Room): boolean {
       const sites = room.find(FIND_MY_CONSTRUCTION_SITES);
       const builders = sites.reduce((a, b) => a + getWorkersById(b.id, room).length, 0);

@@ -80,12 +80,14 @@ export module RoomManagement {
       }
       this.creeps.forEach(c => this.runCreep(c));
 
-      const cannon = <StructureTower>(
-        this.room.find(FIND_MY_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_TOWER })[0]
+      const cannons = <StructureTower[]>(
+        this.room.find(FIND_MY_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_TOWER })
       );
       const enemies = this.room.find(FIND_HOSTILE_CREEPS);
-      if (cannon && enemies) {
-        cannon.attack(enemies[0]);
+      for (const cannon of cannons) {
+        if (cannon && enemies) {
+          cannon.attack(enemies[0]);
+        }
       }
     }
 

@@ -1,8 +1,9 @@
 import { Job } from "Job";
-import { getBuilderBody, getJuicerBody, getJuicerSource, getWorkersById } from "./common";
+import { getBuilderBody, getJuicerBody, getJuicerSource, getWorkersById, hasActiveEnergy } from "./common";
 
 export const JuiceController: Goal = {
   preconditions: [
+    hasActiveEnergy,
     function (room: Room): boolean {
       const controller = room.controller;
       if (!controller || !controller.my) {

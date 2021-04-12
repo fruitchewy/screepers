@@ -8,8 +8,16 @@ export const SpawnMiners: Goal = {
     function (room: Room): boolean {
       return (
         room.memory.cans != undefined &&
-        room.find(FIND_MY_CREEPS, { filter: creep => creep.memory.job === Job.Miner }).length <
-          MINERS_PER_CAN * room.find(FIND_SOURCES).length &&
+        room.memory.cans.every(
+          pos =>
+            getWorkersById(
+              room.find(FIND_STRUCTURES, {
+                filter: struct =>
+                  struct.pos.x == pos.x && struct.pos.y == pos.y && struct.structureType === STRUCTURE_CONTAINER
+              })[0].id,
+              room
+            ).length > 0
+        ) &&
         room.energyCapacityAvailable >= 550
       );
     }

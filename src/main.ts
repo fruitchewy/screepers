@@ -4,10 +4,10 @@ import { Job } from "Job";
 import { RoomManagement } from "RoomManagement";
 
 Traveler.init();
-Creep.prototype.makeIdle = function () {
+Creep.prototype.makeIdle = function (changeOwner: boolean) {
   this.memory.stuckTicks = 0;
   this.memory.job = Job.Idle;
-  this.memory.owner = this.id;
+  this.memory.owner = changeOwner ? this.id : this.memory.owner;
   this.travelTo(Game.rooms[this.pos.roomName].controller!.pos);
 };
 

@@ -8,7 +8,7 @@ import {
   getWorkersById
 } from "goals/common";
 import { Job } from "Job";
-// Runs all creep actions
+
 export function run(creep: Creep, room: Room): void {
   const target = Game.rooms[creep.memory.target.roomName].find(FIND_STRUCTURES, {
     filter: target =>
@@ -17,6 +17,7 @@ export function run(creep: Creep, room: Room): void {
       target.pos.roomName == creep.memory.target.roomName &&
       (isEnergySinkStructure(target) || target.structureType == STRUCTURE_CONTROLLER)
   })[0];
+
   const source =
     (Game.rooms[creep.memory.source.roomName].find(FIND_STRUCTURES, {
       filter: s =>
@@ -34,7 +35,7 @@ export function run(creep: Creep, room: Room): void {
   //Check for bad targets, full targets
   const drop = tryEnergyDropOff(creep, target);
   if (drop === ERR_NOT_OWNER) {
-    creep.makeIdle();
+    creep.makeIdle(true);
     return;
   } else if (
     drop === ERR_FULL ||
@@ -51,7 +52,7 @@ export function run(creep: Creep, room: Room): void {
       creep.memory.owner = newTarget.id;
       creep.memory.target = newTarget.pos;
     } else {
-      creep.makeIdle();
+      creep.makeIdle(false);
     }
   }
 
@@ -103,11 +104,11 @@ function moveToHarvest(creep: Creep, source: Source | StructureContainer, room: 
       if (
         creep.pos.getRangeTo(source) <= 4 &&
         source instanceof StructureContainer &&
-        source.store.getUsedCapacity(RESOURCE_ENERGY) <= 100
+        source.store.getUsedCapacity(RESOURCE_ENERGY) <= creep.store.getFreeCapacity(RESOURCE_ENERGY)
       ) {
         creep.memory.stuckTicks > 0;
         if (creep.memory.stuckTicks > 15) {
-          creep.makeIdle();
+          creep.makeIdle(false);
         }
         return;
       }
@@ -116,7 +117,7 @@ function moveToHarvest(creep: Creep, source: Source | StructureContainer, room: 
     case ERR_NOT_ENOUGH_RESOURCES:
       creep.memory.stuckTicks++;
       if (creep.memory.stuckTicks > 15) {
-        creep.makeIdle();
+        creep.makeIdle(false);
       }
       break;
     case ERR_INVALID_TARGET:
@@ -136,7 +137,6 @@ function tryEnergyDropOff(creep: Creep, target: Structure): number {
 
 function moveToDropEnergy(creep: Creep, target: Structure): void {
   if (tryEnergyDropOff(creep, target) === ERR_NOT_IN_RANGE) {
-    //creep.moveTo(target.pos);
     creep.travelTo(target.pos);
   } else if (tryEnergyDropOff(creep, target) === 0 && creep.pos.getRangeTo(target) == 1) {
     creep.travelTo(target.pos);

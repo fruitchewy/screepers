@@ -37,7 +37,8 @@ export const BuilderRepair: Goal = {
           job: Job.Builder,
           source: source,
           target: structures[0].pos,
-          owner: structures[0].id
+          owner: structures[0].id,
+          stuckTicks: 0
         }
       });
       return assignments;

@@ -26,7 +26,13 @@ export const JuiceTowers: Goal = {
         assignments.push({
           job: Job.Harvester,
           body: getJuicerBody(room),
-          memory: { job: Job.Harvester, source: getJuicerSource(room)!, target: tower.pos, owner: tower.id }
+          memory: {
+            job: Job.Harvester,
+            source: getJuicerSource(room)!,
+            target: tower.pos,
+            owner: tower.id,
+            stuckTicks: 0
+          }
         });
       }
     }

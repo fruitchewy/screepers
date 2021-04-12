@@ -36,7 +36,8 @@ export const JuiceSpawns: Goal = {
             job: Job.Harvester,
             source: room.find(FIND_SOURCES)[0].pos,
             target: spawn.pos,
-            owner: spawn.id
+            owner: spawn.id,
+            stuckTicks: 0
           }
         }
       ];
@@ -49,7 +50,8 @@ export const JuiceSpawns: Goal = {
         job: Job.Harvester,
         source: getJuicerSource(room)!,
         target: spawn.pos,
-        owner: spawn.id
+        owner: spawn.id,
+        stuckTicks: 0
       }
     };
     return [assignment];

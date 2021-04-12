@@ -31,7 +31,8 @@ export const JuiceControllerSurplus: Goal = {
           job: Job.Harvester,
           source: source,
           target: controller.pos,
-          owner: controller.id
+          owner: controller.id,
+          stuckTicks: 0
         }
       };
       return [assignment];

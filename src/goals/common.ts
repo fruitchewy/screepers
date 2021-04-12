@@ -12,7 +12,7 @@ export function getJuicerBody(room: Room): BodyPartConstant[] {
     );
     if (getWorkersById(cans[0].id, room).length > 0) {
       body = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE];
-      for (let i = 0; i < (room.energyCapacityAvailable - 300) / 150; i++) {
+      for (let i = 0; i < (room.energyCapacityAvailable - 300) / 200; i++) {
         body.push(CARRY, MOVE);
       }
     }
@@ -28,7 +28,7 @@ export function getBuilderBody(room: Room): BodyPartConstant[] {
     );
     if (getWorkersById(cans[0].id, room).length > 0) {
       body = [WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE];
-      for (let i = 0; i < (room.energyCapacityAvailable - 450) / 150; i++) {
+      for (let i = 0; i < (room.energyCapacityAvailable - 450) / 200; i++) {
         body.push(CARRY, MOVE);
       }
     }
@@ -38,8 +38,9 @@ export function getBuilderBody(room: Room): BodyPartConstant[] {
 
 export function getMinerBody(room: Room): BodyPartConstant[] {
   let body: BodyPartConstant[] = [WORK, WORK, WORK, WORK, CARRY, CARRY, MOVE];
-  for (let i = 0; i < (room.energyCapacityAvailable - 550) / 100; i++) {
-    body.push(WORK);
+  const scalingCost = 100;
+  for (let i = 0; i < (room.energyCapacityAvailable - 550) / (2 * scalingCost); i++) {
+    body.push(WORK); //100ea
   }
   return body;
 }
@@ -99,4 +100,18 @@ export function getEnergySink(room: Room, near?: RoomPosition): StructureSpawn |
   return <StructureExtension>room.find(FIND_MY_STRUCTURES, {
       filter: struct => struct.structureType == STRUCTURE_EXTENSION && struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0
     })[0] ?? <StructureSpawn>room.find(FIND_MY_SPAWNS, { filter: struct => struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0 })[0];
+}
+
+export type EnergySinkStructure = StructureSpawn | StructureExtension | StructureTower;
+export function isEnergySinkStructure(target: AnyStructure): boolean {
+  return (
+    target.structureType == STRUCTURE_SPAWN ||
+    target.structureType == STRUCTURE_EXTENSION ||
+    target.structureType == STRUCTURE_TOWER
+  );
+}
+
+export type EnergySourceStructure = StructureContainer | StructureStorage;
+export function isEnergySourceStructure(target: AnyStructure): boolean {
+  return target.structureType == STRUCTURE_CONTAINER || target.structureType == STRUCTURE_STORAGE;
 }

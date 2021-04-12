@@ -1,53 +1,85 @@
-import { getEnergySink, getJuicerSource } from "goals/common";
+import {
+  getEnergySink,
+  getJuicerSource,
+  isEnergySourceStructure,
+  isEnergySinkStructure,
+  EnergySourceStructure,
+  EnergySinkStructure,
+  getWorkersById
+} from "goals/common";
 import { Job } from "Job";
 // Runs all creep actions
 export function run(creep: Creep, room: Room): void {
-  const target = room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
-  if (room.name != creep.memory.target.roomName) {
-    creep.travelTo(Game.getObjectById(creep.memory.owner));
-    return;
-  }
-  let source: Source | StructureContainer;
-  source =
-    room.find(FIND_STRUCTURES, {
+  const target = Game.rooms[creep.memory.target.roomName].find(FIND_STRUCTURES, {
+    filter: target =>
+      target.pos.x == creep.memory.target.x &&
+      target.pos.y == creep.memory.target.y &&
+      target.pos.roomName == creep.memory.target.roomName &&
+      (isEnergySinkStructure(target) || target.structureType == STRUCTURE_CONTROLLER)
+  })[0];
+  const source =
+    (Game.rooms[creep.memory.source.roomName].find(FIND_STRUCTURES, {
       filter: s =>
         creep.memory.source.x == s.pos.x && creep.memory.source.y == s.pos.y && s.structureType === STRUCTURE_CONTAINER
-    }).length === 1
-      ? <StructureContainer>room.find(FIND_STRUCTURES, {
-          filter: s =>
-            creep.memory.source.x == s.pos.x &&
-            creep.memory.source.y == s.pos.y &&
-            s.structureType === STRUCTURE_CONTAINER
-        })[0]
-      : <Source>room.find(FIND_SOURCES, {
-          filter: s => creep.memory.source.x == s.pos.x && creep.memory.source.y == s.pos.y
-        })[0];
-  const can = room.lookForAt(LOOK_STRUCTURES, creep.memory.source.x, creep.memory.source.y)[0];
+    })[0] as StructureContainer) ?? <Source>room.find(FIND_SOURCES, {
+      filter: s => creep.memory.source.x == s.pos.x && creep.memory.source.y == s.pos.y
+    })[0];
 
+  //Pick up dropped resources
   if (creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1).length > 0 && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
     creep.pickup(creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1)[0]);
     return;
   }
 
+  //Check for bad targets, full targets
   const drop = tryEnergyDropOff(creep, target);
-  if (drop === ERR_INVALID_TARGET || drop === ERR_NOT_OWNER) {
-    console.log("Deassigning [" + drop + "]: " + creep.name + " -> " + JSON.stringify(creep.memory.target));
-    creep.memory.owner = creep.id;
-    creep.memory.job = Job.Idle;
+  if (drop === ERR_NOT_OWNER) {
+    creep.makeIdle();
     return;
-  } else if (drop === ERR_FULL) {
-    const target = getEnergySink(room, creep.pos);
-    if (target) {
-      creep.memory.owner = target.id;
-      creep.memory.target = target.pos;
+  } else if (
+    drop === ERR_FULL ||
+    (isEnergySinkStructure(target) && (<EnergySinkStructure>target).store.getFreeCapacity(RESOURCE_ENERGY) === 0)
+  ) {
+    const newTarget = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+      filter: s =>
+        isEnergySinkStructure(s) &&
+        (<EnergySinkStructure>s).store.getFreeCapacity(RESOURCE_ENERGY) > 0 &&
+        getWorkersById(s.id, room).length === 0
+    });
+
+    if (newTarget) {
+      creep.memory.owner = newTarget.id;
+      creep.memory.target = newTarget.pos;
     } else {
-      console.log("Deassigning [" + drop + "]: " + creep.name + " -> " + JSON.stringify(creep.memory.target));
-      creep.memory.owner = creep.id;
-      creep.memory.job = Job.Idle;
+      creep.makeIdle();
     }
   }
+
+  //Check for empty sources and alternatives periodically
   if (
-    creep.store.getUsedCapacity(RESOURCE_ENERGY) < 10 ||
+    Game.time % 10 == 0 &&
+    isEnergySourceStructure(source) &&
+    source.store.getUsedCapacity(RESOURCE_ENERGY) < creep.store.getFreeCapacity(RESOURCE_ENERGY) &&
+    room.find(FIND_STRUCTURES, {
+      filter: s =>
+        s.id != source.id &&
+        isEnergySourceStructure(s) &&
+        (<EnergySourceStructure>s).store.getUsedCapacity(RESOURCE_ENERGY) >
+          (creep.pos.findPathTo(s).length / 1.5) * creep.store.getCapacity(RESOURCE_ENERGY)
+    }).length > 0
+  ) {
+    creep.memory.source =
+      creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        filter: s =>
+          s.id != source.id &&
+          isEnergySourceStructure(s) &&
+          (<EnergySourceStructure>s).store.getUsedCapacity(RESOURCE_ENERGY) >
+            (creep.pos.findPathTo(s).length / 1.5) * creep.store.getCapacity(RESOURCE_ENERGY)
+      })?.pos ?? creep.memory.source;
+  }
+
+  if (
+    creep.store.getUsedCapacity(RESOURCE_ENERGY) < 50 ||
     (tryHarvest(creep, source) === 0 && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
   ) {
     moveToHarvest(creep, source, room);
@@ -73,22 +105,29 @@ function moveToHarvest(creep: Creep, source: Source | StructureContainer, room: 
         source instanceof StructureContainer &&
         source.store.getUsedCapacity(RESOURCE_ENERGY) <= 100
       ) {
+        creep.memory.stuckTicks > 0;
+        if (creep.memory.stuckTicks > 15) {
+          creep.makeIdle();
+        }
         return;
       }
       creep.travelTo(source.pos);
       break;
+    case ERR_NOT_ENOUGH_RESOURCES:
+      creep.memory.stuckTicks++;
+      if (creep.memory.stuckTicks > 15) {
+        creep.makeIdle();
+      }
+      break;
     case ERR_INVALID_TARGET:
       creep.memory.source = room.find(FIND_SOURCES_ACTIVE)[0].pos;
-      break;
-    case ERR_NOT_ENOUGH_RESOURCES:
-      creep.memory.source = getJuicerSource(room)!;
       break;
     default:
   }
 }
 
 function tryEnergyDropOff(creep: Creep, target: Structure): number {
-  if (target.structureType === STRUCTURE_CONTROLLER) {
+  if (target?.structureType === STRUCTURE_CONTROLLER) {
     return creep.upgradeController(<StructureController>target);
   } else {
     return creep.transfer(target, RESOURCE_ENERGY);

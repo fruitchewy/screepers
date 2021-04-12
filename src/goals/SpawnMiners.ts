@@ -32,7 +32,8 @@ export const SpawnMiners: Goal = {
             job: Job.Miner,
             source: source,
             target: canPos,
-            owner: can.id
+            owner: can.id,
+            stuckTicks: 0
           }
         });
     }

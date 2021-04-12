@@ -1,7 +1,11 @@
 import { Job } from "Job";
 // Runs all creep actions
 export function run(creep: Creep, room: Room): void {
-  const target = <StructureContainer>room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
+  const target = <StructureContainer>(
+    room
+      .lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)
+      .filter(struct => struct.structureType === STRUCTURE_CONTAINER)[0]
+  );
   const source = room.lookForAt(LOOK_SOURCES, creep.memory.source.x, creep.memory.source.y)[0];
 
   if (target && target.hitsMax - target.hits > 1000) {

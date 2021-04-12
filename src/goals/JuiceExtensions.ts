@@ -34,7 +34,8 @@ export const JuiceExtensions: Goal = {
           job: Job.Harvester,
           source: source,
           target: target.pos,
-          owner: target.id
+          owner: target.id,
+          stuckTicks: 0
         }
       };
       return [assignment];

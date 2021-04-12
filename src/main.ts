@@ -4,6 +4,12 @@ import { Job } from "Job";
 import { RoomManagement } from "RoomManagement";
 
 Traveler.init();
+Creep.prototype.makeIdle = function () {
+  this.memory.stuckTicks = 0;
+  this.memory.job = Job.Idle;
+  this.memory.owner = this.id;
+  this.travelTo(Game.rooms[this.pos.roomName].controller!.pos);
+};
 
 export const loop = ErrorMapper.wrapLoop(() => {
   // Automatically delete memory of missing creeps
@@ -24,6 +30,7 @@ declare global {
     source: RoomPosition;
     target: RoomPosition;
     owner: Id<any>;
+    stuckTicks: number;
   }
   interface RoomMemory {
     cans?: RoomPosition[];

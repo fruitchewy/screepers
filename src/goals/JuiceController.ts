@@ -29,12 +29,13 @@ export const JuiceController: Goal = {
           job: Job.Harvester,
           source: source,
           target: controller.pos,
-          owner: controller.id
+          owner: controller.id,
+          stuckTicks: 0
         }
       };
       return [assignment];
     }
     return [];
   },
-  priority: 4
+  priority: 6
 };

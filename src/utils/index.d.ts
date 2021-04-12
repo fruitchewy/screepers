@@ -52,10 +52,16 @@ interface TravelState {
 
 interface Creep {
   travelTo(destination: HasPos | RoomPosition, ops?: TravelToOptions): number;
+  makeIdle(): void;
 }
 
 interface CreepMemory {
   _trav?: TravelData;
+}
+
+interface Structure {
+  isEnergySinkStructure(): boolean;
+  isEnergySourceStructure(): boolean;
 }
 
 interface RoomMemory {

@@ -8,7 +8,7 @@ export const SpawnMiners: Goal = {
     function (room: Room): boolean {
       return (
         room.memory.cans != undefined &&
-        room.memory.cans.every(
+        room.memory.cans.some(
           pos =>
             getWorkersById(
               room.find(FIND_STRUCTURES, {
@@ -16,7 +16,7 @@ export const SpawnMiners: Goal = {
                   struct.pos.x == pos.x && struct.pos.y == pos.y && struct.structureType === STRUCTURE_CONTAINER
               })[0].id,
               room
-            ).length > 0
+            ).length < MINERS_PER_CAN
         ) &&
         room.energyCapacityAvailable >= 550
       );

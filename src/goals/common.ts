@@ -6,7 +6,11 @@ export function getWorkersById(id: Id<any>, room: Room): Creep[] {
 
 export function getJuicerBody(room: Room): BodyPartConstant[] {
   let body: BodyPartConstant[] = [WORK, CARRY, CARRY, MOVE, MOVE];
-  if (room.memory.cans && room.memory.cans.length > 0) {
+  const spawnWorkers = getWorkersById(room.find(FIND_MY_SPAWNS)[0]!.id, room).length;
+  const extWorkers = room
+    .find(FIND_MY_STRUCTURES, { filter: struct => struct.structureType == STRUCTURE_EXTENSION })
+    .reduce((a, b) => a + getWorkersById(b.id, room).length, 0);
+  if (room.memory.cans && room.memory.cans.length > 0 && spawnWorkers + extWorkers > 1) {
     const cans: StructureContainer[] = <StructureContainer[]>room.find(FIND_STRUCTURES, {
       filter: struct => struct.structureType == STRUCTURE_CONTAINER || struct.structureType == STRUCTURE_STORAGE
     });
@@ -63,7 +67,7 @@ export function getJuicerSource(room: Room): RoomPosition | undefined {
       return sorted[0].pos;
     }
   }
-  return _.sample(room.find(FIND_SOURCES), 1)[0].pos
+  return _.sample(room.find(FIND_SOURCES), 1)[0].pos;
 }
 
 export function findEmptyNear(pos: RoomPosition, room: Room): RoomPosition | undefined {
@@ -79,10 +83,10 @@ export function findEmptyNear(pos: RoomPosition, room: Room): RoomPosition | und
   ];
   for (const offset of offsets) {
     const x = pos.x + offset[0];
-    const y = pos.y + offset[0];
+    const y = pos.y + offset[1];
     if (
       room.getTerrain().get(x, y) != TERRAIN_MASK_WALL &&
-      room.lookForAt(LOOK_STRUCTURES, x, y).length == 0 &&
+      room.lookForAt(LOOK_STRUCTURES, x, y).filter(s => s.structureType != STRUCTURE_ROAD).length == 0 &&
       room.lookForAt(LOOK_CONSTRUCTION_SITES, x, y).length == 0
     ) {
       return new RoomPosition(x, y, room.name);

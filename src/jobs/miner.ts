@@ -8,7 +8,7 @@ export function run(creep: Creep, room: Room): void {
   );
   const source = room.lookForAt(LOOK_SOURCES, creep.memory.source.x, creep.memory.source.y)[0];
 
-  if (target && target.hitsMax - target.hits > 1000) {
+  if (target && target.hitsMax - target.hits > 1000 && target.pos.getRangeTo(creep) < 2) {
     creep.repair(target);
   }
 

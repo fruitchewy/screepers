@@ -9,7 +9,7 @@ export const JuiceExtensions: Goal = {
         filter: struct => struct.structureType == STRUCTURE_EXTENSION
       });
       const liveWorkers = extensions.reduce((a, b) => a + getWorkersById(b.id, room).length, 0);
-      return liveWorkers < _.ceil(extensions.length / 10) && room.energyAvailable / room.energyCapacityAvailable < 1;
+      return liveWorkers < _.ceil(extensions.length / 10) + 1 && room.energyAvailable < room.energyCapacityAvailable;
     }
   ],
   getCreepAssignments(room: Room): Assignment[] {

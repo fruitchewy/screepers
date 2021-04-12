@@ -45,8 +45,9 @@ export function run(creep: Creep, room: Room): void {
     creep.makeIdle(true);
     return;
   } else if (
-    (drop === ERR_FULL)||
-    (isEnergySinkStructure(target) && (<EnergySinkStructure>target).store.getFreeCapacity(RESOURCE_ENERGY) === 0)
+    room.name == creep.memory.source.roomName &&
+    (drop === ERR_FULL ||
+      (isEnergySinkStructure(target) && (<EnergySinkStructure>target).store.getFreeCapacity(RESOURCE_ENERGY) === 0))
   ) {
     const newTarget = creep.pos.findClosestByPath(FIND_STRUCTURES, {
       filter: s =>

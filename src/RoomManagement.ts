@@ -32,7 +32,7 @@ export module RoomManagement {
       BuilderSites,
       SpawnMiners,
       ExploreNeighbors,
-   //   JuiceBootstrapNeighbor,
+      //JuiceBootstrapNeighbor,
       BuilderNeighborSpawns
       //JuiceControllerSurplus
     ].sort((a, b) => a.priority - b.priority);
@@ -139,10 +139,13 @@ export module RoomManagement {
         }
 
         if (matches.length > 0) {
-          const trav = matches[0].memory._trav!;
-          matches[0].memory = want.memory;
-          matches[0].memory._trav = trav;
-          console.log("Reassigned " + matches[0].name);
+          const chosen = matches.sort(
+            (a, b) => a.pos.getRangeTo(want.memory.target) - b.pos.getRangeTo(want.memory.target)
+          )[0];
+          const trav = chosen.memory._trav!;
+          chosen.memory = want.memory;
+          chosen.memory._trav = trav;
+          console.log("Reassigned " + chosen.name);
         } else {
           unsatisfied.push(want);
         }
@@ -157,7 +160,7 @@ export module RoomManagement {
         return wants;
       }
 
-      const res = spawn.spawnCreep(wants[0].body, wants[0].job + Game.time);
+      const res = spawn.spawnCreep(wants[0].body, wants[0].job + Game.time, { directions: [BOTTOM] });
       if (res === 0) {
         console.log(
           "Spawning " + wants[0].job + " with target " + wants[0].memory.target.x + "," + wants[0].memory.target.y

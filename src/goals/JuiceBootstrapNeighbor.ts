@@ -13,8 +13,7 @@ export const JuiceBootstrapNeighbor: Goal = {
         if (
           room2.controller &&
           room2.controller.my &&
-          getWorkersById(room2.controller!.id, room).length < 2 &&
-          room.energyCapacityAvailable >= 700 &&
+          room2.controller.level < 3 &&
           room2.find(FIND_MY_SPAWNS).length > 0
         ) {
           return true;
@@ -32,7 +31,7 @@ export const JuiceBootstrapNeighbor: Goal = {
     for (const neighbor of room.memory.knownNeighbors) {
       const room2 = Game.rooms[neighbor];
       if (room2 == undefined || room2.controller == undefined) {
-        return []
+        return [];
       }
       const workers = getWorkersById(room2.controller!.id, room).length;
       const body = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE];

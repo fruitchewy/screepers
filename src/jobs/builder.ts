@@ -18,18 +18,18 @@ export function run(creep: Creep, room: Room): void {
     : room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
 
   if (room.name != creep.memory.target.roomName) {
-    if (!target && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+    if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
       moveToHarvest(creep, source, room);
       return;
     }
     creep.moveTo(new RoomPosition(25, 25, creep.memory.target.roomName));
     return;
   } else if (room.name != creep.memory.source.roomName) {
-    if (!source && creep.store.getUsedCapacity(RESOURCE_ENERGY) != 0) {
+    if (creep.store.getUsedCapacity(RESOURCE_ENERGY) != 0 && target instanceof ConstructionSite) {
       moveToBuild(creep, target);
       return;
-    }
-    creep.moveTo(new RoomPosition(0, 0, creep.memory.source.roomName));
+    } else if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0)
+      creep.moveTo(new RoomPosition(0, 0, creep.memory.source.roomName));
   }
 
   if (

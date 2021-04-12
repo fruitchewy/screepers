@@ -6,15 +6,25 @@ export const BuilderSites: Goal = {
   preconditions: [
     hasActiveEnergy,
     function (room: Room): boolean {
-      const sites = room.find(FIND_MY_CONSTRUCTION_SITES);
-      const builders = sites.reduce((a, b) => a + getWorkersById(b.id, room).length, 0);
+      let sites = room.find(FIND_MY_CONSTRUCTION_SITES);
+      if (room.memory.knownNeighbors != undefined && room.memory.knownNeighbors.length > 0) {
+        room.memory.knownNeighbors.forEach(n => {
+          sites = sites.concat(Game.rooms[n].find(FIND_MY_CONSTRUCTION_SITES));
+        });
+      }
+      const builders = sites.reduce((a, b) => a + getWorkersById(b.id, b.room!).length, 0);
       return sites.length > 0 && builders < 3;
     }
   ],
   getCreepAssignments(room: Room): Assignment[] {
-    const sites = room
+    let sites = room
       .find(FIND_MY_CONSTRUCTION_SITES)
       .sort((a, b) => b.progress / b.progressTotal - a.progress / a.progressTotal);
+    if (room.memory.knownNeighbors != undefined && room.memory.knownNeighbors.length > 0) {
+      room.memory.knownNeighbors.forEach(n => {
+        sites = sites.concat(Game.rooms[n].find(FIND_MY_CONSTRUCTION_SITES));
+      });
+    }
     let assignments: Assignment[] = [];
 
     for (const site of sites) {

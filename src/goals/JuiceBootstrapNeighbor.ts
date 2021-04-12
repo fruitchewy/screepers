@@ -31,6 +31,9 @@ export const JuiceBootstrapNeighbor: Goal = {
 
     for (const neighbor of room.memory.knownNeighbors) {
       const room2 = Game.rooms[neighbor];
+      if (room2 == undefined || room2.controller == undefined) {
+        return []
+      }
       const workers = getWorkersById(room2.controller!.id, room).length;
       const body = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE];
       for (let i = 0; i < 2 - workers; i++) {

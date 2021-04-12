@@ -39,7 +39,7 @@ export const ConstructRoads: Goal = {
     }
     path = path.concat(findRoadPath(path[0], controller.pos, room).path);
 
-    if (extensions) {
+    if (extensions.length > 0) {
       path = path.concat(findRoadPath(path[0], extensions[0], room).path);
     }
 

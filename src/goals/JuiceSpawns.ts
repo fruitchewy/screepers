@@ -20,7 +20,7 @@ export const JuiceSpawns: Goal = {
         return false;
       }
 
-      if (extensions === 0 && liveWorkers < 3) {
+      if (extensions < 5 && liveWorkers < 3) {
         return true;
       }
 

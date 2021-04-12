@@ -63,9 +63,7 @@ export function getJuicerSource(room: Room): RoomPosition | undefined {
       return sorted[0].pos;
     }
   }
-  return room
-    .find(FIND_SOURCES)
-    .sort((a, b) => a.pos.findInRange(FIND_MY_CREEPS, 5).length - b.pos.findInRange(FIND_MY_CREEPS, 5).length)[0].pos;
+  return _.sample(room.find(FIND_SOURCES), 1)[0].pos
 }
 
 export function findEmptyNear(pos: RoomPosition, room: Room): RoomPosition | undefined {

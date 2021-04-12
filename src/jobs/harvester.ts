@@ -26,11 +26,6 @@ export function run(creep: Creep, room: Room): void {
       filter: s => creep.memory.source.x == s.pos.x && creep.memory.source.y == s.pos.y
     })[0];
 
-  if (source == undefined) {
-    console.log("why is my source undefined again");
-    creep.makeIdle(true);
-  }
-
   //Pick up dropped resources
   if (
     creep.pos.findInRange(FIND_DROPPED_RESOURCES, 2).length > 0 &&
@@ -50,7 +45,7 @@ export function run(creep: Creep, room: Room): void {
     creep.makeIdle(true);
     return;
   } else if (
-    drop === ERR_FULL ||
+    (drop === ERR_FULL)||
     (isEnergySinkStructure(target) && (<EnergySinkStructure>target).store.getFreeCapacity(RESOURCE_ENERGY) === 0)
   ) {
     const newTarget = creep.pos.findClosestByPath(FIND_STRUCTURES, {

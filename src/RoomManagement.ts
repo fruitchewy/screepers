@@ -32,7 +32,7 @@ export module RoomManagement {
       BuilderSites,
       SpawnMiners,
       ExploreNeighbors,
-      JuiceBootstrapNeighbor,
+   //   JuiceBootstrapNeighbor,
       BuilderNeighborSpawns
       //JuiceControllerSurplus
     ].sort((a, b) => a.priority - b.priority);

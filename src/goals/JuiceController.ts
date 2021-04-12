@@ -11,7 +11,7 @@ export const JuiceController: Goal = {
       }
       const liveWorkers = getWorkersById(controller?.id, room).length;
 
-      if (liveWorkers < 8) {
+      if (liveWorkers < controller.level*1.5) {
         return true;
       }
       return false;

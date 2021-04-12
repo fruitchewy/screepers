@@ -16,11 +16,22 @@ export function run(creep: Creep, room: Room): void {
   target = room.lookForAt(LOOK_CONSTRUCTION_SITES, creep.memory.target.x, creep.memory.target.y)[0]
     ? room.lookForAt(LOOK_CONSTRUCTION_SITES, creep.memory.target.x, creep.memory.target.y)[0]
     : room.lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)[0];
-  if (!source) {
-    creep.memory.owner = creep.id;
-    creep.memory.job = Job.Idle;
+
+  if (room.name != creep.memory.target.roomName) {
+    if (!target && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+      moveToHarvest(creep, source, room);
+      return;
+    }
+    creep.moveTo(new RoomPosition(25, 25, creep.memory.target.roomName));
     return;
+  } else if (room.name != creep.memory.source.roomName) {
+    if (!source && creep.store.getUsedCapacity(RESOURCE_ENERGY) != 0) {
+      moveToBuild(creep, target);
+      return;
+    }
+    creep.moveTo(new RoomPosition(0, 0, creep.memory.source.roomName));
   }
+
   if (
     !(Game.getObjectById(target.id) instanceof ConstructionSite) &&
     (<Structure<StructureConstant>>target).hits === (<Structure<StructureConstant>>target).hitsMax

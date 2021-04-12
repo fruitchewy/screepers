@@ -1,9 +1,9 @@
 import { Job } from "Job";
-import { getJuicerBody, getJuicerSource, getWorkersById, hasActiveEnergy } from "./common";
+import { getJuicerBody, getJuicerSource, getWorkersById, hasActiveEnergy, roomHealthy } from "./common";
 
 export const JuiceTowers: Goal = {
   preconditions: [
-    hasActiveEnergy,
+    room => (roomHealthy(room) ? hasActiveEnergy(room) : true),
     function (room: Room): boolean {
       const towers = <StructureTower[]>(
         room.find(FIND_MY_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_TOWER })

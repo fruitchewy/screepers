@@ -8,7 +8,6 @@ Creep.prototype.makeIdle = function (changeOwner: boolean) {
   this.memory.stuckTicks = 0;
   this.memory.job = Job.Idle;
   this.memory.owner = changeOwner ? this.id : this.memory.owner;
-  this.travelTo(Game.rooms[this.pos.roomName].controller!.pos);
 };
 
 export const loop = ErrorMapper.wrapLoop(() => {
@@ -34,5 +33,7 @@ declare global {
   }
   interface RoomMemory {
     cans?: RoomPosition[];
+    unknownNeighbors?: string[];
+    knownNeighbors?: string[];
   }
 }

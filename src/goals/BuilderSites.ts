@@ -15,7 +15,6 @@ export const BuilderSites: Goal = {
     const sites = room
       .find(FIND_MY_CONSTRUCTION_SITES)
       .sort((a, b) => b.progress / b.progressTotal - a.progress / a.progressTotal);
-    const body = [WORK, CARRY, CARRY, MOVE, MOVE];
     let assignments: Assignment[] = [];
 
     for (const site of sites) {

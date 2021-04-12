@@ -1,17 +1,14 @@
 import { Job } from "Job";
-import { getJuicerBody, getJuicerSource, getWorkersById, hasActiveEnergy } from "./common";
+import { getJuicerBody, getJuicerSource, getWorkersById, hasActiveEnergy, roomHealthy } from "./common";
 
 export const JuiceExtensions: Goal = {
   preconditions: [
-    hasActiveEnergy,
+    room => (roomHealthy(room) ? hasActiveEnergy(room) : true),
     function (room: Room): boolean {
       const extensions = <StructureExtension[]>room.find(FIND_MY_STRUCTURES, {
         filter: struct => struct.structureType == STRUCTURE_EXTENSION
       });
       const liveWorkers = extensions.reduce((a, b) => a + getWorkersById(b.id, room).length, 0);
-      const nonEmptyIdleExtensions = extensions.filter(
-        ext => ext.store.getFreeCapacity(RESOURCE_ENERGY) !== 0 && getWorkersById(ext.id, room).length === 0
-      );
       return liveWorkers < _.ceil(extensions.length / 10) && room.energyAvailable / room.energyCapacityAvailable < 1;
     }
   ],

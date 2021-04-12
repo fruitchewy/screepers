@@ -26,7 +26,6 @@ export const BuilderRepair: Goal = {
         struct.structureType != STRUCTURE_CONTAINER &&
         struct.hits < 50000
     });
-    const body = [WORK, CARRY, CARRY, MOVE, MOVE];
     let assignments: Assignment[] = [];
     const source = getJuicerSource(room);
     if (source) {

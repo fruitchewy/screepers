@@ -14,17 +14,22 @@ export const ConstructRoads: Goal = {
   ],
   getConstructionSites(room: Room): BuildRequest[] {
     const spawn = room.find(FIND_MY_SPAWNS)[0];
-    const sources = room.find(FIND_SOURCES).map(a => a.pos);
+    const sources = room
+      .find(FIND_SOURCES)
+      .map(a => a.pos)
+      .sort((a, b) => a.getRangeTo(spawn) - b.getRangeTo(spawn));
     const extensions = room
       .find(FIND_MY_STRUCTURES, {
         filter: struct => struct.structureType === STRUCTURE_EXTENSION
       })
-      .map(a => a.pos);
+      .map(a => a.pos)
+      .sort((a, b) => a.getRangeTo(spawn) - b.getRangeTo(spawn));
     const cans = room
       .find(FIND_STRUCTURES, {
         filter: struct => struct.structureType === STRUCTURE_CONTAINER
       })
-      .map(a => a.pos);
+      .map(a => a.pos)
+      .sort((a, b) => a.getRangeTo(spawn) - b.getRangeTo(spawn));
     const controller = room.controller!;
 
     let path: RoomPosition[] = [];

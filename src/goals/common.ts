@@ -7,10 +7,13 @@ export function getWorkersById(id: Id<any>, room: Room): Creep[] {
 export function getJuicerBody(room: Room): BodyPartConstant[] {
   let body: BodyPartConstant[] = [WORK, CARRY, CARRY, MOVE, MOVE];
   if (room.memory.cans && room.memory.cans.length > 0) {
-    const cans: StructureContainer[] = <StructureContainer[]>(
-      room.find(FIND_STRUCTURES, { filter: struct => struct.structureType == STRUCTURE_CONTAINER })
-    );
-    if (getWorkersById(cans[0].id, room).length > 0) {
+    const cans: StructureContainer[] = <StructureContainer[]>room.find(FIND_STRUCTURES, {
+      filter: struct => struct.structureType == STRUCTURE_CONTAINER || struct.structureType == STRUCTURE_STORAGE
+    });
+    if (
+      cans.some(can => getWorkersById(can.id, room).length > 0) ||
+      cans.some(can => can.store.getUsedCapacity(RESOURCE_ENERGY) > 1000)
+    ) {
       body = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE];
       for (let i = 0; i < _.min([3, (room.energyCapacityAvailable - 300) / 400]); i++) {
         body.push(CARRY, MOVE);
@@ -49,7 +52,9 @@ export function getJuicerSource(room: Room): RoomPosition | undefined {
   if (room.find(FIND_SOURCES).length < 1) return undefined;
   if (room.memory.cans && room.memory.cans.length > 0) {
     const cans: StructureContainer[] = <StructureContainer[]>room.find(FIND_STRUCTURES, {
-      filter: struct => struct.structureType == STRUCTURE_CONTAINER && getWorkersById(struct.id, room).length > 0
+      filter: struct =>
+        struct.structureType == STRUCTURE_CONTAINER &&
+        (getWorkersById(struct.id, room).length > 0 || struct.store.getUsedCapacity(RESOURCE_ENERGY) > 500)
     });
     if (cans.length > 0) {
       const sorted = cans.sort(
@@ -105,20 +110,45 @@ export function getEnergySink(room: Room, near?: RoomPosition): StructureSpawn |
 export function hasActiveEnergy(room: Room): boolean {
   if (room.memory.cans) {
     return (
-      room.find(FIND_SOURCES_ACTIVE).length > 0 &&
-      room
-        .find(FIND_SOURCES_ACTIVE)
-        .every(
+      (room.find(FIND_SOURCES_ACTIVE).length > 0 &&
+        room.find(FIND_SOURCES_ACTIVE).every(
           source =>
             getWorkersById(
-              room.find(FIND_STRUCTURES, { filter: s => isEnergySourceStructure(s) && source.pos.getRangeTo(s) < 2 })[0]
-                .id,
+              room.find(FIND_STRUCTURES, {
+                filter: s => isEnergySourceStructure(s) && source.pos.getRangeTo(s) < 2
+              })[0].id,
               room
             ).length > 0
-        )
+        )) ||
+      room.find(FIND_STRUCTURES, {
+        filter: struct =>
+          (struct.structureType === STRUCTURE_CONTAINER || struct.structureType === STRUCTURE_STORAGE) &&
+          (struct as EnergySourceStructure).store.getUsedCapacity(RESOURCE_ENERGY) > 1000
+      }).length > 0
     );
   }
   return room.find(FIND_SOURCES_ACTIVE).length > 0;
+}
+
+export function roomHealthy(room: Room): boolean {
+  const miners = room.find(FIND_MY_CREEPS, { filter: creep => creep.memory.job == Job.Miner }).length;
+  const sources = room.find(FIND_SOURCES).length;
+  const harvesters = room.find(FIND_MY_CREEPS, { filter: creep => creep.memory.job == Job.Harvester }).length;
+  const spawns = room.find(FIND_MY_SPAWNS).length;
+
+  if (spawns === 0) {
+    return false;
+  }
+
+  if (miners < sources - 1) {
+    return false;
+  }
+
+  if (harvesters < 3 && getWorkersById(room.find(FIND_MY_SPAWNS)[0].id, room).length == 0) {
+    return false;
+  }
+
+  return true;
 }
 
 export type EnergySinkStructure = StructureSpawn | StructureExtension | StructureTower;

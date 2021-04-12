@@ -2,6 +2,7 @@ import * as harvester from "jobs/harvester";
 import * as builder from "jobs/builder";
 import * as idle from "jobs/idle";
 import * as miner from "jobs/miner";
+import * as conqueror from "jobs/conqueror";
 import { Job } from "Job";
 import { JuiceController } from "goals/JuiceController";
 import { JuiceExtensions } from "goals/JuiceExtensions";
@@ -9,14 +10,14 @@ import { JuiceSpawns } from "goals/JuiceSpawns";
 import { JuiceTowers } from "goals/JuiceTowers";
 import { BuilderRepair } from "goals/BuilderRepair";
 import { BuilderSites } from "goals/BuilderSites";
-import { JuiceControllerSurplus } from "goals/JuiceControllerSurplus";
 import { ConstructRoads } from "goals/ConstructRoads";
 import { ConstructJetcans } from "goals/ConstructJetcans";
 import { FlagJetcans } from "goals/FlagJetcans";
 import { SpawnMiners } from "goals/SpawnMiners";
-import { assign } from "lodash";
-import { getWorkersById } from "goals/common";
-import { FlagAnnexes } from "goals/FlagAnnexes";
+import { FlagNeighbors } from "goals/FlagNeighbors";
+import { ExploreNeighbors } from "goals/ExploreNeighbors";
+import { JuiceBootstrapNeighbor } from "goals/JuiceBootstrapNeighbor";
+import { BuilderNeighborSpawns } from "goals/BuilderNeighborSpawns";
 
 export module RoomManagement {
   export class Director {
@@ -29,10 +30,13 @@ export module RoomManagement {
       JuiceTowers,
       BuilderRepair,
       BuilderSites,
-      SpawnMiners
+      SpawnMiners,
+      ExploreNeighbors,
+      JuiceBootstrapNeighbor,
+      BuilderNeighborSpawns
       //JuiceControllerSurplus
     ].sort((a, b) => a.priority - b.priority);
-    buildGoals: Goal[] = [ConstructRoads, ConstructJetcans, FlagJetcans, FlagAnnexes].sort(
+    buildGoals: Goal[] = [ConstructRoads, ConstructJetcans, FlagJetcans, FlagNeighbors].sort(
       (a, b) => a.priority - b.priority
     );
 
@@ -72,10 +76,10 @@ export module RoomManagement {
         let idle = this.creeps.filter(creep => creep.memory.job === Job.Idle);
 
         this.room.visual.text(unsatisfied.length + " unsatisfied assignments", 10, 20);
-        this.room.visual.text("" + (this.creeps.length - idle.length) + " active creeps", 10, 23);
-        this.room.visual.text(idle.length + " idle creeps", 10, 26);
+        this.room.visual.text("" + (this.creeps.length - idle.length) + " active creeps", 10, 21);
+        this.room.visual.text(idle.length + " idle creeps", 10, 22);
         if (unsatisfied.length > 0) {
-          this.room.visual.text(unsatisfied[0]?.job + " => " + JSON.stringify(unsatisfied[0]?.memory.target), 10, 29);
+          this.room.visual.text(unsatisfied[0]?.job + " => " + JSON.stringify(unsatisfied[0]?.memory.target), 10, 23);
         }
       }
       this.creeps.forEach(c => this.runCreep(c));
@@ -147,7 +151,7 @@ export module RoomManagement {
     }
 
     private spawnCreeps(wants: Assignment[]): Assignment[] {
-      const spawn = Game.spawns["Spawn1"];
+      const spawn = this.room.find(FIND_MY_SPAWNS)[0];
 
       if (!spawn || spawn.spawning || wants.length < 1) {
         return wants;
@@ -178,6 +182,8 @@ export module RoomManagement {
         case Job.Idle:
           idle.run(creep, this.room);
           break;
+        case Job.Conqueror:
+          conqueror.run(creep, this.room);
         default:
           break;
       }

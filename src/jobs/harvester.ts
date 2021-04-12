@@ -26,9 +26,21 @@ export function run(creep: Creep, room: Room): void {
       filter: s => creep.memory.source.x == s.pos.x && creep.memory.source.y == s.pos.y
     })[0];
 
+  if (source == undefined) {
+    console.log("why is my source undefined again");
+    creep.makeIdle(true);
+  }
+
   //Pick up dropped resources
-  if (creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1).length > 0 && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-    creep.pickup(creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1)[0]);
+  if (
+    creep.pos.findInRange(FIND_DROPPED_RESOURCES, 2).length > 0 &&
+    creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0 &&
+    creep.pos.findPathTo(creep.pos.findInRange(FIND_DROPPED_RESOURCES, 2)[0]).length < 4
+  ) {
+    creep.pickup(creep.pos.findInRange(FIND_DROPPED_RESOURCES, 2)[0]);
+    if (creep.pickup(creep.pos.findInRange(FIND_DROPPED_RESOURCES, 2)[0]) == ERR_NOT_IN_RANGE) {
+      creep.travelTo(creep.pos.findInRange(FIND_DROPPED_RESOURCES, 2)[0]);
+    }
     return;
   }
 

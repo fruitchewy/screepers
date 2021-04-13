@@ -35,8 +35,8 @@ export function getBuilderBody(room: Room): BodyPartConstant[] {
     );
     if (getWorkersById(cans[0].id, room).length > 0) {
       body = [WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE];
-      for (let i = 0; i < _.min([3, (room.energyCapacityAvailable - 450) / 400]); i++) {
-        body.push(CARRY, MOVE);
+      for (let i = 0; i < _.min([3, (room.energyCapacityAvailable - 450) / 450]); i++) {
+        body.push(WORK, CARRY, MOVE);
       }
     }
   }

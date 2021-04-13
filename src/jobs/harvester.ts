@@ -147,7 +147,13 @@ function tryEnergyDropOff(creep: Creep, target: Structure): number {
 
 function moveToDropEnergy(creep: Creep, target: Structure): void {
   if (tryEnergyDropOff(creep, target) === ERR_NOT_IN_RANGE) {
-    creep.travelTo(target.pos);
+    if (creep.moveTo(target.pos, { range: 0 }) === ERR_NO_PATH) {
+      creep.memory.stuckTicks = creep.memory.stuckTicks + 1;
+      if (creep.memory.stuckTicks >= 10) {
+        console.log("idling no reach harvester");
+        creep.makeIdle(true);
+      }
+    }
   } else if (tryEnergyDropOff(creep, target) === 0 && creep.pos.getRangeTo(target) == 1) {
     creep.travelTo(target.pos);
   }

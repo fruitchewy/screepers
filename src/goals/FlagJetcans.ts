@@ -21,6 +21,6 @@ export const FlagJetcans: Goal = {
 function jetcanReady(room: Room): boolean {
   return (
     room.find(FIND_STRUCTURES, { filter: struct => <StructureConstant>struct.structureType === STRUCTURE_CONTAINER })
-      .length >= room.find(FIND_SOURCES_ACTIVE).length
+      .length >= room.find(FIND_SOURCES).length
   );
 }

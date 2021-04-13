@@ -17,9 +17,12 @@ export const loop = ErrorMapper.wrapLoop(() => {
       delete Memory.creeps[name];
     }
   }
+
+  let offset: number = 0;
   for (const room in Game.rooms) {
-    const roomDirector = new RoomManagement.Director(Game.rooms[room]);
+    const roomDirector = new RoomManagement.Director(Game.rooms[room], offset);
     roomDirector.run();
+    offset++;
   }
 });
 

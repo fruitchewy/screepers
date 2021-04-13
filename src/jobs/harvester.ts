@@ -89,6 +89,8 @@ export function run(creep: Creep, room: Room): void {
 
   if (
     creep.store.getUsedCapacity(RESOURCE_ENERGY) < 50 ||
+    (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0 &&
+      (target == undefined || target.pos.getRangeTo(creep) > source.pos.getRangeTo(creep))) ||
     (tryHarvest(creep, source) === 0 && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
   ) {
     moveToHarvest(creep, source, room);

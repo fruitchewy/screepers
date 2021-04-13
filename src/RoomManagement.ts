@@ -22,6 +22,7 @@ import { BuilderNeighborSpawns } from "goals/BuilderNeighborSpawns";
 export module RoomManagement {
   export class Director {
     room: Room;
+    offset: number;
     creeps: Creep[] = [];
     creepGoals: Goal[] = [
       JuiceController,
@@ -40,13 +41,14 @@ export module RoomManagement {
       (a, b) => a.priority - b.priority
     );
 
-    constructor(room: Room) {
+    constructor(room: Room, index: number) {
       this.room = room;
+      this.offset = index;
     }
 
     run() {
       this.loadCreeps();
-      if (Game.time % 1 == 0) {
+      if ((Game.time + this.offset) % 8 == 0) {
         //generate construction sites
         const builds = this.buildGoals.reduce(
           (a, goal) =>
@@ -125,6 +127,9 @@ export module RoomManagement {
             if (!avail.has(part)) {
               match = false;
               break;
+            } else if (avail.get(part)! <= 0) {
+              match = false;
+              break;
             }
             avail.set(part, avail.get(part)! - 1);
           }
@@ -160,7 +165,7 @@ export module RoomManagement {
         return wants;
       }
 
-      const res = spawn.spawnCreep(wants[0].body, wants[0].job + Game.time, { directions: [BOTTOM] });
+      const res = spawn.spawnCreep(wants[0].body, wants[0].job + Game.time);
       if (res === 0) {
         console.log(
           "Spawning " + wants[0].job + " with target " + wants[0].memory.target.x + "," + wants[0].memory.target.y

@@ -10,7 +10,7 @@ export function getJuicerBody(room: Room): BodyPartConstant[] {
   const extWorkers = room
     .find(FIND_MY_STRUCTURES, { filter: struct => struct.structureType == STRUCTURE_EXTENSION })
     .reduce((a, b) => a + getWorkersById(b.id, room).length, 0);
-  if (room.memory.cans && room.memory.cans.length > 0 && spawnWorkers + extWorkers > 1) {
+  if (room.memory.cans && room.memory.cans.length > 0 && roomHealthy(room)) {
     const cans: StructureContainer[] = <StructureContainer[]>room.find(FIND_STRUCTURES, {
       filter: struct => struct.structureType == STRUCTURE_CONTAINER || struct.structureType == STRUCTURE_STORAGE
     });
@@ -146,7 +146,7 @@ export function roomHealthy(room: Room): boolean {
     return false;
   }
 
-  if (harvesters < 3 && getWorkersById(room.find(FIND_MY_SPAWNS)[0].id, room).length == 0) {
+  if (harvesters == 0) {
     return false;
   }
 

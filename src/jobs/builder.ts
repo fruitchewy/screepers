@@ -33,8 +33,9 @@ export function run(creep: Creep, room: Room): void {
   }
 
   if (
-    !(Game.getObjectById(target.id) instanceof ConstructionSite) &&
-    (<Structure<StructureConstant>>target).hits === (<Structure<StructureConstant>>target).hitsMax
+    !target ||
+    (!(Game.getObjectById(target.id) instanceof ConstructionSite) &&
+      (<Structure<StructureConstant>>target).hits === (<Structure<StructureConstant>>target).hitsMax)
   ) {
     target =
       creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES) ??

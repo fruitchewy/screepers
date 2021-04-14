@@ -1,9 +1,19 @@
 import { Job } from "Job";
-import { getJuicerBody, getJuicerSource, getWorkersById, hasActiveEnergy, roomHealthy } from "./common";
+import {
+  getJuicerBody,
+  getJuicerSource,
+  getWorkersById,
+  hasActiveEnergy,
+  roomHealthy
+} from "./common";
 
 export const JuiceExtensions: Goal = {
   preconditions: [
     room => (roomHealthy(room) ? hasActiveEnergy(room) : true),
+    room =>
+      room.find(FIND_MY_STRUCTURES, {
+        filter: struct => struct.structureType == STRUCTURE_EXTENSION
+      }).length > 0,
     function (room: Room): boolean {
       const extensions = <StructureExtension[]>room.find(FIND_MY_STRUCTURES, {
         filter: struct => struct.structureType == STRUCTURE_EXTENSION
@@ -13,7 +23,9 @@ export const JuiceExtensions: Goal = {
         (a, b) => a + getWorkersById(b.id, room).filter(w => w.memory.job != Job.Idle).length,
         0
       );
-      return liveNonIdleWorkers < Math.ceil((room.energyCapacityAvailable - room.energyAvailable) / 200);
+      return (
+        liveNonIdleWorkers < Math.ceil((room.energyCapacityAvailable - room.energyAvailable) / 200)
+      );
     }
   ],
   getCreepAssignments(room: Room): Assignment[] {
@@ -22,7 +34,9 @@ export const JuiceExtensions: Goal = {
     });
 
     const nonEmptyIdleExtensions = extensions.filter(
-      ext => ext.store.getFreeCapacity(RESOURCE_ENERGY) !== 0 && getWorkersById(ext.id, room).length === 0
+      ext =>
+        ext.store.getFreeCapacity(RESOURCE_ENERGY) !== 0 &&
+        getWorkersById(ext.id, room).length === 0
     );
 
     const target = nonEmptyIdleExtensions[0] ? nonEmptyIdleExtensions[0] : extensions[0];

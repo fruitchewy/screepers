@@ -18,6 +18,7 @@ import { FlagNeighbors } from "goals/FlagNeighbors";
 import { ExploreNeighbors } from "goals/ExploreNeighbors";
 import { JuiceBootstrapNeighbor } from "goals/JuiceBootstrapNeighbor";
 import { BuilderNeighborSpawns } from "goals/BuilderNeighborSpawns";
+import { BuilderNeighborSites } from "goals/BuilderNeighborSites";
 
 export module RoomManagement {
   export class Director {
@@ -33,8 +34,9 @@ export module RoomManagement {
       BuilderSites,
       SpawnMiners,
       ExploreNeighbors,
-      //JuiceBootstrapNeighbor,
-      BuilderNeighborSpawns
+      BuilderNeighborSpawns,
+      BuilderNeighborSites,
+      JuiceBootstrapNeighbor
       //JuiceControllerSurplus
     ].sort((a, b) => a.priority - b.priority);
     buildGoals: Goal[] = [ConstructRoads, ConstructJetcans, FlagJetcans, FlagNeighbors].sort(
@@ -60,7 +62,9 @@ export module RoomManagement {
           <BuildRequest[]>[]
         );
         const activeSites = this.room.find(FIND_MY_CONSTRUCTION_SITES).length;
-        builds.slice(0, 5 - activeSites).forEach(req => this.room.createConstructionSite(req.pos, req.structureType));
+        builds
+          .slice(0, 5 - activeSites)
+          .forEach(req => this.room.createConstructionSite(req.pos, req.structureType));
 
         //generate creep assignments
         const assignments = this.creepGoals.reduce(
@@ -72,6 +76,12 @@ export module RoomManagement {
             ),
           <Assignment[]>[]
         );
+        if (this.room.name == "W9N8") {
+          //console.log("ASSIGN" + this.room.name + assignments.length + assignments[0]?.job);
+          //console.log(unallocated.length + JSON.stringify(unallocated[0]));
+          //console.log(unsatisfied.length + JSON.stringify(unsatisfied[0]));
+        }
+
         const unallocated = this.allocateCreeps(assignments, this.creeps);
         const unsatisfied = this.spawnCreeps(unallocated);
 
@@ -81,14 +91,18 @@ export module RoomManagement {
         this.room.visual.text("" + (this.creeps.length - idle.length) + " active creeps", 10, 21);
         this.room.visual.text(idle.length + " idle creeps", 10, 22);
         if (unsatisfied.length > 0) {
-          this.room.visual.text(unsatisfied[0]?.job + " => " + JSON.stringify(unsatisfied[0]?.memory.target), 10, 23);
+          this.room.visual.text(
+            unsatisfied[0]?.job + " => " + JSON.stringify(unsatisfied[0]?.memory.target),
+            10,
+            23
+          );
         }
       }
       this.creeps.forEach(c => this.runCreep(c));
 
-      const cannons = <StructureTower[]>(
-        this.room.find(FIND_MY_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_TOWER })
-      );
+      const cannons = <StructureTower[]>this.room.find(FIND_MY_STRUCTURES, {
+        filter: struct => struct.structureType === STRUCTURE_TOWER
+      });
       const enemies = this.room.find(FIND_HOSTILE_CREEPS);
       for (const cannon of cannons) {
         if (cannon && enemies) {
@@ -161,17 +175,21 @@ export module RoomManagement {
     private spawnCreeps(wants: Assignment[]): Assignment[] {
       const spawn = this.room.find(FIND_MY_SPAWNS)[0];
 
-      if (!spawn || spawn.spawning || wants.length < 1) {
+      if (wants.length < 1 || !spawn) {
         return wants;
       }
 
       const res = spawn.spawnCreep(wants[0].body, wants[0].job + Game.time);
       if (res === 0) {
         console.log(
-          "Spawning " + wants[0].job + " with target " + wants[0].memory.target.x + "," + wants[0].memory.target.y
+          "Spawning " +
+            wants[0].job +
+            " with target " +
+            wants[0].memory.target.x +
+            "," +
+            wants[0].memory.target.y
         );
         return wants.slice(1, wants.length);
-      } else {
       }
       return wants;
     }

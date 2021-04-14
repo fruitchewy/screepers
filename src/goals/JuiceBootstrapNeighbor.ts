@@ -1,5 +1,11 @@
 import { Job } from "Job";
-import { getJuicerBody, getJuicerSource, getWorkersById, hasActiveEnergy, roomHealthy } from "./common";
+import {
+  getJuicerBody,
+  getJuicerSource,
+  getWorkersById,
+  hasActiveEnergy,
+  roomHealthy
+} from "./common";
 
 export const JuiceBootstrapNeighbor: Goal = {
   preconditions: [
@@ -11,6 +17,7 @@ export const JuiceBootstrapNeighbor: Goal = {
       for (const neighbor of room.memory.knownNeighbors) {
         const room2 = Game.rooms[neighbor];
         if (
+          room2 &&
           room2.controller &&
           room2.controller.my &&
           room2.controller.level < 3 &&
@@ -31,19 +38,21 @@ export const JuiceBootstrapNeighbor: Goal = {
     for (const neighbor of room.memory.knownNeighbors) {
       const room2 = Game.rooms[neighbor];
       if (room2 == undefined || room2.controller == undefined) {
-        return [];
+        continue;
       }
-      const workers = getWorkersById(room2.controller!.id, room).length;
+      const controllerWorkers =
+        getWorkersById(room2.controller!.id, room2).length +
+        getWorkersById(room2.controller!.id, room).length;
       const body = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE];
-      for (let i = 0; i < 2 - workers; i++) {
+      for (let i = 0; i < 2 - controllerWorkers; i++) {
         assignments.push({
           job: Job.Harvester,
-          body: getJuicerBody(room),
+          body: getJuicerBody(room).concat([WORK, WORK]),
           memory: {
             job: Job.Harvester,
             source: getJuicerSource(room)!,
-            target: room2.find(FIND_MY_SPAWNS)[0].pos,
-            owner: room2.find(FIND_MY_SPAWNS)[0].id,
+            target: room2.controller!.pos,
+            owner: room2.controller!.id,
             stuckTicks: 0
           }
         });
@@ -52,5 +61,5 @@ export const JuiceBootstrapNeighbor: Goal = {
 
     return assignments;
   },
-  priority: 7
+  priority: 6
 };

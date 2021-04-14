@@ -12,15 +12,16 @@ export function run(creep: Creep, room: Room): void {
     creep.suicide();
   }
 
-  if (room.find(FIND_FLAGS, { filter: flag => flag.pos == room.controller!.pos }).length > 0) {
+  if (room.find(FIND_FLAGS, { filter: flag => flag.name == "CONQUER" }).length > 0) {
+    console.log("conquering " + room.name);
     switch (creep.claimController(controller)) {
       case ERR_NOT_IN_RANGE:
         creep.moveTo(controller);
         break;
       case ERR_INVALID_TARGET:
+      default:
         creep.suicide();
         break;
-      default:
     }
     return;
   }

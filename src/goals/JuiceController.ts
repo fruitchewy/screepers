@@ -1,11 +1,18 @@
 import { Job } from "Job";
-import { getBuilderBody, getJuicerBody, getJuicerSource, getWorkersById, hasActiveEnergy, roomHealthy } from "./common";
+import {
+  getBuilderBody,
+  getJuicerBody,
+  getJuicerSource,
+  getWorkersById,
+  hasActiveEnergy,
+  roomHealthy
+} from "./common";
 
 export const JuiceController: Goal = {
   preconditions: [
     function (room: Room): boolean {
       const controller = room.controller;
-      if (!controller || !controller.my) {
+      if (!controller || !controller.my || room.find(FIND_MY_SPAWNS).length == 0) {
         return false;
       }
       const liveWorkers = getWorkersById(controller?.id, room);
@@ -14,19 +21,35 @@ export const JuiceController: Goal = {
       }
       const juicerCargoAvgPct =
         liveWorkers
-          .map(creep => (creep.store.getUsedCapacity(RESOURCE_ENERGY) / creep.store.getCapacity(RESOURCE_ENERGY)) * 100)
+          .map(
+            creep =>
+              (creep.store.getUsedCapacity(RESOURCE_ENERGY) /
+                creep.store.getCapacity(RESOURCE_ENERGY)) *
+              100
+          )
           .reduce((a, b) => a + b) / liveWorkers.length;
       const pctEmptyJuicers =
         (liveWorkers.filter(
-          creep => creep.store.getUsedCapacity(RESOURCE_ENERGY) / creep.store.getCapacity(RESOURCE_ENERGY) < 0.2
+          creep =>
+            creep.store.getUsedCapacity(RESOURCE_ENERGY) /
+              creep.store.getCapacity(RESOURCE_ENERGY) <
+            0.2
         ).length /
           liveWorkers.length) *
         100;
-      if (liveWorkers.length < Math.ceil(controller.level ** 1.2) && roomHealthy(room) && hasActiveEnergy(room)) {
+      if (
+        liveWorkers.length < Math.ceil(controller.level ** 1.2) &&
+        roomHealthy(room) &&
+        hasActiveEnergy(room)
+      ) {
         if (liveWorkers.length == 0) {
           return true;
         } else
-          return roomHealthy(room) && pctEmptyJuicers < 15 && (juicerCargoAvgPct != 0 ? juicerCargoAvgPct : 61) > 65;
+          return (
+            roomHealthy(room) &&
+            pctEmptyJuicers < 10 &&
+            (juicerCargoAvgPct != 0 ? juicerCargoAvgPct : 66) > 65
+          );
       }
       return false;
     }

@@ -19,11 +19,14 @@ export function run(creep: Creep, room: Room): void {
         }
       }
       return;
-    } else if (creeps.filter(c => c.memory.job == Job.Miner).length > 0 && target.pos.getRangeTo(creep) > 1) {
-      console.log("miner reposition a " + creep.moveTo(target.pos));
+    } else if (
+      creeps.filter(c => c.memory.job == Job.Miner).length > 0 &&
+      target.pos.getRangeTo(creep) > 1
+    ) {
+      creep.moveTo(target.pos);
       return;
     } else if (target.pos.getRangeTo(creep) > 0) {
-      console.log("miner reposition b " + creep.moveTo(target.pos, { range: 0 }));
+      creep.moveTo(target.pos, { range: 0 });
       return;
     }
   }

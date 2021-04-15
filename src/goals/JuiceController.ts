@@ -80,10 +80,11 @@ export const JuiceController: Goal = {
         (a, b) => a + b.body.reduce((c, d) => c + (d.type === WORK ? 1 : 0), 0),
         0
       );
-      const addWorks = Math.min(
-        (room.find(FIND_SOURCES).length * SOURCE_ENERGY_CAPACITY) / ENERGY_REGEN_TIME / HARVEST_POWER - workParts,
-        (room.energyCapacityAvailable - creepBodyCost(getJuicerBody(room))) / 150
-      );
+      const addWorks =
+        Math.min(
+          (room.find(FIND_SOURCES).length * SOURCE_ENERGY_CAPACITY) / ENERGY_REGEN_TIME / HARVEST_POWER - workParts,
+          (room.energyCapacityAvailable - creepBodyCost(getJuicerBody(room))) / 150
+        ) ?? 0;
       const assignment: Assignment = {
         job: Job.Harvester,
         body: getJuicerBody(room).concat(

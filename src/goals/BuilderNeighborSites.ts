@@ -15,7 +15,7 @@ export const BuilderNeighborSites: Goal = {
           room2 &&
           room2.controller &&
           room2.controller.my &&
-          room2.controller.level < 6 &&
+          room2.controller.level < 4 &&
           room2.find(FIND_MY_CONSTRUCTION_SITES).length > 0 &&
           room2
             .find(FIND_MY_CONSTRUCTION_SITES)

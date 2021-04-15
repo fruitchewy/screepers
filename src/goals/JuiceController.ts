@@ -26,7 +26,8 @@ export const JuiceController: Goal = {
         100;*/
       const sources = room.find(FIND_SOURCES).length;
       const liveCreepsWithWorks = room.find(FIND_MY_CREEPS, {
-        filter: creep => creep.body.some(part => part.type == WORK)
+        filter: creep =>
+          creep.body.some(part => part.type == WORK) && creep.memory.job != Job.Miner && creep.memory.job != Job.Idle
       });
       const workParts = liveCreepsWithWorks.reduce(
         (a, b) => a + b.body.reduce((c, d) => c + (d.type === WORK ? 1 : 0), 0),
@@ -40,7 +41,7 @@ export const JuiceController: Goal = {
         else
           return (
             roomHealthy(room) &&
-            workParts + Math.ceil(((room.energyCapacityAvailable - 300) / 400) * 0.75) <
+            workParts + 2 + Math.ceil(((room.energyCapacityAvailable - 300) / 400) * 0.75) <
               (sources * SOURCE_ENERGY_CAPACITY) / ENERGY_REGEN_TIME / HARVEST_POWER
           );
       }

@@ -35,11 +35,18 @@ export function getBuilderBody(room: Room): BodyPartConstant[] {
     const cans: StructureContainer[] = <StructureContainer[]>(
       room.find(FIND_STRUCTURES, { filter: struct => struct.structureType == STRUCTURE_CONTAINER })
     );
-    console.log(room.name);
     if (getWorkersById(cans[0].id, room).length > 0) {
       body = [WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE];
-      for (let i = 0; i < _.min([3, Math.floor((room.energyCapacityAvailable - 450) / 450)]); i++) {
-        body.push(WORK, CARRY, MOVE);
+      for (
+        let i = 0;
+        i <
+        Math.min(
+          3,
+          Math.floor((room.energyCapacityAvailable - creepBodyCost(body)) / creepBodyCost([WORK, CARRY, MOVE, MOVE]))
+        );
+        i++
+      ) {
+        body.push(WORK, CARRY, MOVE, MOVE);
       }
     }
   }
@@ -48,9 +55,12 @@ export function getBuilderBody(room: Room): BodyPartConstant[] {
 
 export function getMinerBody(room: Room): BodyPartConstant[] {
   let body: BodyPartConstant[] = [WORK, WORK, WORK, WORK, CARRY, CARRY, MOVE];
-  const scalingCost = 100;
-  for (let i = 0; i < Math.min(2, (room.energyCapacityAvailable - 550) / (2 * scalingCost)); i++) {
-    body.push(WORK); //100ea
+  for (
+    let i = 0;
+    i < Math.min(2, (room.energyCapacityAvailable - creepBodyCost(body)) / (2 * creepBodyCost([WORK])));
+    i++
+  ) {
+    body.push(WORK);
   }
   return body;
 }
@@ -170,4 +180,39 @@ export function isEnergySinkStructure(target: AnyStructure): boolean {
 export type EnergySourceStructure = StructureContainer | StructureStorage;
 export function isEnergySourceStructure(target: AnyStructure): boolean {
   return target.structureType == STRUCTURE_CONTAINER || target.structureType == STRUCTURE_STORAGE;
+}
+
+export function creepBodyCost(body: BodyPartConstant[]): number {
+  let sum = 0;
+  for (const part of body) {
+    switch (part) {
+      case WORK:
+        sum += 100;
+        break;
+      case CARRY:
+        sum += 50;
+        break;
+      case MOVE:
+        sum += 50;
+        break;
+      case CLAIM:
+        sum += 600;
+        break;
+      case ATTACK:
+        sum += 80;
+        break;
+      case RANGED_ATTACK:
+        sum += 150;
+        break;
+      case HEAL:
+        sum += 250;
+        break;
+      case TOUGH:
+        sum += 10;
+        break;
+      default:
+        break;
+    }
+  }
+  return sum;
 }

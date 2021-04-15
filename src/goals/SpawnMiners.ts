@@ -14,7 +14,7 @@ export const SpawnMiners: Goal = {
               room.find(FIND_STRUCTURES, {
                 filter: struct =>
                   struct.pos.x == pos.x && struct.pos.y == pos.y && struct.structureType === STRUCTURE_CONTAINER
-              })[0].id,
+              })[0]?.id,
               room
             ).length < MINERS_PER_CAN
         ) &&

@@ -88,7 +88,7 @@ export function run(creep: Creep, room: Room): void {
   }
 
   if (
-    creep.store.getUsedCapacity(RESOURCE_ENERGY) < 50 ||
+    (creep.store.getUsedCapacity(RESOURCE_ENERGY) < 50 && tryEnergyDropOff(creep, target) != 0) ||
     (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0 &&
       (target == undefined || target.pos.getRangeTo(creep) > source.pos.getRangeTo(creep))) ||
     (tryHarvest(creep, source) === 0 && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
@@ -116,7 +116,6 @@ function moveToHarvest(creep: Creep, source: Source | StructureContainer, room: 
         source instanceof StructureContainer &&
         source.store.getUsedCapacity(RESOURCE_ENERGY) <= creep.store.getFreeCapacity(RESOURCE_ENERGY)
       ) {
-        creep.memory.stuckTicks > 0;
         if (creep.memory.stuckTicks > 15) {
           creep.makeIdle(false);
         }

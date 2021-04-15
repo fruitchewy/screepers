@@ -50,7 +50,7 @@ export module RoomManagement {
 
     run() {
       this.loadCreeps();
-      if ((Game.time + this.offset) % 8 == 0) {
+      if ((Game.time + this.offset) % 4 == 0) {
         //generate construction sites
         const builds = this.buildGoals.reduce(
           (a, goal) =>
@@ -62,9 +62,7 @@ export module RoomManagement {
           <BuildRequest[]>[]
         );
         const activeSites = this.room.find(FIND_MY_CONSTRUCTION_SITES).length;
-        builds
-          .slice(0, 5 - activeSites)
-          .forEach(req => this.room.createConstructionSite(req.pos, req.structureType));
+        builds.slice(0, 5 - activeSites).forEach(req => this.room.createConstructionSite(req.pos, req.structureType));
 
         //generate creep assignments
         const assignments = this.creepGoals.reduce(
@@ -91,11 +89,7 @@ export module RoomManagement {
         this.room.visual.text("" + (this.creeps.length - idle.length) + " active creeps", 10, 21);
         this.room.visual.text(idle.length + " idle creeps", 10, 22);
         if (unsatisfied.length > 0) {
-          this.room.visual.text(
-            unsatisfied[0]?.job + " => " + JSON.stringify(unsatisfied[0]?.memory.target),
-            10,
-            23
-          );
+          this.room.visual.text(unsatisfied[0]?.job + " => " + JSON.stringify(unsatisfied[0]?.memory.target), 10, 23);
         }
       }
       this.creeps.forEach(c => this.runCreep(c));
@@ -182,12 +176,7 @@ export module RoomManagement {
       const res = spawn.spawnCreep(wants[0].body, wants[0].job + Game.time);
       if (res === 0) {
         console.log(
-          "Spawning " +
-            wants[0].job +
-            " with target " +
-            wants[0].memory.target.x +
-            "," +
-            wants[0].memory.target.y
+          "Spawning " + wants[0].job + " with target " + wants[0].memory.target.x + "," + wants[0].memory.target.y
         );
         return wants.slice(1, wants.length);
       }

@@ -55,7 +55,7 @@ export const JuiceController: Goal = {
           return (
             roomHealthy(room) &&
             workParts + 1 <= maxparts &&
-            liveWorkers.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0) < maxparts * 1.5
+            liveWorkers.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0) < maxparts * 1.7
           );
       }
       return false;

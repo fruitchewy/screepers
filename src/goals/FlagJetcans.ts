@@ -19,8 +19,13 @@ export const FlagJetcans: Goal = {
 };
 
 function jetcanReady(room: Room): boolean {
-  return (
+  /* return (
     room.find(FIND_STRUCTURES, { filter: struct => <StructureConstant>struct.structureType === STRUCTURE_CONTAINER })
       .length >= room.find(FIND_SOURCES).length
-  );
+  );*/
+  return room
+    .find(FIND_SOURCES)
+    .some(source =>
+      source.pos.findInRange(FIND_STRUCTURES, 1).some(struct => struct.structureType == STRUCTURE_CONTAINER)
+    );
 }

@@ -24,10 +24,11 @@ export const JuiceSpawns: Goal = {
         return true;
       }
 
-      if (liveNonIdleWorkers < 1 && spawns[0].store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+      if (liveNonIdleWorkers < 1 && spawns[0].store.getFreeCapacity(RESOURCE_ENERGY) > 50) {
         return true;
       }
-      if (liveWorkers < 1 && spawns[0].store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+
+      if (liveWorkers < 1 && spawns[0].store.getFreeCapacity(RESOURCE_ENERGY) > 50) {
         return true;
       }
       return false;

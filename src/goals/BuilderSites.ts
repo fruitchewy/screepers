@@ -16,6 +16,10 @@ export const BuilderSites: Goal = {
       .find(FIND_MY_CONSTRUCTION_SITES)
       .sort((a, b) => b.progress / b.progressTotal - a.progress / a.progressTotal);
 
+    if (sites.filter(site => site.structureType != STRUCTURE_ROAD).length > 0) {
+      sites = sites.filter(site => site.structureType != STRUCTURE_ROAD);
+    }
+
     let assignments: Assignment[] = [];
 
     for (const site of sites) {

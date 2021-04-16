@@ -1,11 +1,5 @@
 import { Job } from "Job";
-import {
-  getJuicerBody,
-  getJuicerSource,
-  getWorkersById,
-  hasActiveEnergy,
-  roomHealthy
-} from "./common";
+import { getJuicerBody, getJuicerSource, getWorkersById, hasActiveEnergy, roomHealthy } from "./common";
 
 export const JuiceExtensions: Goal = {
   preconditions: [
@@ -24,7 +18,13 @@ export const JuiceExtensions: Goal = {
         0
       );
       return (
-        liveNonIdleWorkers < Math.ceil((room.energyCapacityAvailable - room.energyAvailable) / 200)
+        (room.energyCapacityAvailable -
+          300 -
+          room.energyAvailable -
+          room.find(FIND_MY_SPAWNS)[0].store.getUsedCapacity(RESOURCE_ENERGY)) /
+          getJuicerBody(room).filter(part => part == CARRY).length >
+        50
+        //liveNonIdleWorkers < Math.ceil((room.energyCapacityAvailable - room.energyAvailable) / 200)
       );
     }
   ],
@@ -34,9 +34,7 @@ export const JuiceExtensions: Goal = {
     });
 
     const nonEmptyIdleExtensions = extensions.filter(
-      ext =>
-        ext.store.getFreeCapacity(RESOURCE_ENERGY) !== 0 &&
-        getWorkersById(ext.id, room).length === 0
+      ext => ext.store.getFreeCapacity(RESOURCE_ENERGY) !== 0 && getWorkersById(ext.id, room).length === 0
     );
 
     const target = nonEmptyIdleExtensions[0] ? nonEmptyIdleExtensions[0] : extensions[0];

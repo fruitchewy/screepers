@@ -41,10 +41,6 @@ export const JuiceController: Goal = {
                   .filter(struct => struct.structureType === STRUCTURE_CONTROLLER).length > 0
               : true)
         );
-      console.log(room.name, liveCreepsWithWorks.length);
-      liveCreepsWithWorks.forEach(creep =>
-        console.log("CREEP: ", creep.pos, creep.memory.job, " TARGET: ", creep.memory.target.x, creep.memory.target.y)
-      );
 
       const workParts = liveCreepsWithWorks.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0);
 

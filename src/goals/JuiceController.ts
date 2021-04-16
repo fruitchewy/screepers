@@ -56,7 +56,7 @@ export const JuiceController: Goal = {
         } else
           return (
             workParts + 2 <= maxparts &&
-            liveWorkers.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0) < maxparts * 1.2
+            liveWorkers.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0) < maxparts * 3
           );
       }
       return false;

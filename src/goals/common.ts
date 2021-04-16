@@ -75,7 +75,7 @@ export function getJuicerSource(room: Room): RoomPosition | undefined {
     });
     if (cans.length > 0) {
       const sorted = cans.sort(
-        (a, b) => a.pos.findInRange(FIND_MY_CREEPS, 3).length - b.pos.findInRange(FIND_MY_CREEPS, 3).length
+        (a, b) => a.pos.findInRange(FIND_MY_CREEPS, 4).length - b.pos.findInRange(FIND_MY_CREEPS, 4).length
       );
       return sorted[0].pos;
     }

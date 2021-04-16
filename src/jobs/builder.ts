@@ -40,7 +40,7 @@ export function run(creep: Creep, room: Room): void {
     target =
       creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES) ??
       creep.pos.findClosestByPath(FIND_STRUCTURES, {
-        filter: struct => struct.hitsMax - struct.hits > 100 && struct.hits < 100000
+        filter: struct => struct.hitsMax - struct.hits > 99 && struct.hits < 100000
       });
     if (!target) {
       console.log("failed to retarget builder " + creep.name);

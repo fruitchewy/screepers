@@ -22,42 +22,41 @@ export const JuiceController: Goal = {
       if (liveWorkers.filter(creep => creep.memory.job != Job.Idle).length < 1) {
         return true;
       }
-      /*const juicerCargoAvgPct =
-        liveWorkers
-          .map(creep => (creep.store.getUsedCapacity(RESOURCE_ENERGY) / creep.store.getCapacity(RESOURCE_ENERGY)) * 100)
-          .reduce((a, b) => a + b) / liveWorkers.length;
-      const pctEmptyJuicers =
-        (liveWorkers.filter(
-          creep => creep.store.getUsedCapacity(RESOURCE_ENERGY) / creep.store.getCapacity(RESOURCE_ENERGY) < 0.2
-        ).length /
-          liveWorkers.length) *
-        100;*/
-      const sources = room.find(FIND_SOURCES).length;
-      const liveCreepsWithWorks = room.find(FIND_MY_CREEPS, {
-        filter: creep =>
-          creep.body.some(part => part.type == WORK) &&
-          creep.memory.job != Job.Miner &&
-          creep.memory.job != Job.Idle &&
-          creep.pos != undefined &&
-          creep.memory.target != undefined &&
-          room.findPath(creep.pos, creep.memory.target).length < 12
-      });
-      const workParts = liveCreepsWithWorks.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0);
 
-      console.log(room.name, workParts);
+      const sources = room.find(FIND_SOURCES).length;
+      const liveCreepsWithWorks = room
+        .find(FIND_MY_CREEPS)
+        .filter(
+          creep =>
+            creep.body.some(part => part.type === WORK) &&
+            creep.memory.job !== Job.Miner &&
+            creep.memory.job !== Job.Idle &&
+            creep.memory.target != undefined &&
+            new RoomPosition(creep.memory.target.x, creep.memory.target.y, creep.memory.target.roomName).getRangeTo(
+              creep.pos
+            ) < 6 &&
+            (creep.memory.job === Job.Harvester
+              ? room
+                  .lookForAt(LOOK_STRUCTURES, creep.memory.target.x, creep.memory.target.y)
+                  .filter(struct => struct.structureType === STRUCTURE_CONTROLLER).length > 0
+              : true)
+        );
+      console.log(room.name, liveCreepsWithWorks.length);
+      liveCreepsWithWorks.forEach(creep =>
+        console.log("CREEP: ", creep.pos, creep.memory.job, " TARGET: ", creep.memory.target.x, creep.memory.target.y)
+      );
+
+      const workParts = liveCreepsWithWorks.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0);
 
       const maxparts = (sources * SOURCE_ENERGY_CAPACITY) / ENERGY_REGEN_TIME / HARVEST_POWER;
 
       if (liveWorkers.length < Math.ceil(controller.level ** 1.2) && roomHealthy(room) && hasActiveEnergy(room)) {
         if (liveWorkers.length == 0) {
           return true;
-        }
-        //return roomHealthy(room) && pctEmptyJuicers < 10 && (juicerCargoAvgPct != 0 ? juicerCargoAvgPct : 66) > 65;
-        else
+        } else
           return (
-            roomHealthy(room) &&
-            workParts + 1 <= maxparts &&
-            liveWorkers.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0) < maxparts * 1.8
+            workParts + 2 <= maxparts &&
+            liveWorkers.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0) < maxparts * 1.2
           );
       }
       return false;
@@ -74,7 +73,8 @@ export const JuiceController: Goal = {
           creep.body.some(part => part.type == WORK) &&
           creep.memory.job != Job.Miner &&
           creep.memory.job != Job.Idle &&
-          room.findPath(creep.pos, creep.memory.target).length < 5
+          room.findPath(creep.pos, creep.memory.target).length < 8 &&
+          creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0
       });
       const workParts = liveCreepsWithWorks.reduce(
         (a, b) => a + b.body.reduce((c, d) => c + (d.type === WORK ? 1 : 0), 0),
@@ -83,15 +83,17 @@ export const JuiceController: Goal = {
       const addWorks =
         Math.min(
           (room.find(FIND_SOURCES).length * SOURCE_ENERGY_CAPACITY) / ENERGY_REGEN_TIME / HARVEST_POWER - workParts,
-          (room.energyCapacityAvailable - creepBodyCost(getJuicerBody(room))) / 150
+          Math.floor((room.energyCapacityAvailable - creepBodyCost(getJuicerBody(room))) / 150)
         ) ?? 0;
+      let body = getJuicerBody(room);
+      if (!body.some(p => p === WORK) && addWorks > 0) {
+        for (let i = 0; i < addWorks; i++) {
+          body = body.concat([MOVE, WORK]);
+        }
+      }
       const assignment: Assignment = {
         job: Job.Harvester,
-        body: getJuicerBody(room).concat(
-          getJuicerBody(room).find(p => p == WORK) || addWorks < 1
-            ? []
-            : Array(addWorks).fill(WORK).concat(Array(addWorks).fill(MOVE)) ?? []
-        ),
+        body: body,
         memory: {
           job: Job.Harvester,
           source: source,

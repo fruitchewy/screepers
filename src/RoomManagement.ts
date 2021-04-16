@@ -152,7 +152,17 @@ export module RoomManagement {
         }
 
         if (matches.length > 0) {
-          const chosen = matches.sort(
+          const bodyFit = matches.sort(
+            (a, b) =>
+              a.body.filter(part => !want.body.includes(part.type)).length -
+              b.body.filter(part => !want.body.includes(part.type)).length
+          );
+          const best = bodyFit.filter(
+            creep =>
+              creep.body.filter(part => !want.body.includes(part.type)).length <=
+              bodyFit[0].body.filter(part => !want.body.includes(part.type)).length
+          );
+          const chosen = best.sort(
             (a, b) => a.pos.getRangeTo(want.memory.target) - b.pos.getRangeTo(want.memory.target)
           )[0];
           const trav = chosen.memory._trav!;

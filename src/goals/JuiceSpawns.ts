@@ -31,6 +31,21 @@ export const JuiceSpawns: Goal = {
       if (liveWorkers < 1 && spawns[0].store.getFreeCapacity(RESOURCE_ENERGY) > 50) {
         return true;
       }
+
+      if (
+        spawns.reduce(
+          (a, b) =>
+            a +
+            getWorkersById(b.id, room)
+              .reduce((c, d) => c.concat(d.body), <BodyPartDefinition[]>[])
+              .filter(b => b.type == CARRY).length,
+          0
+        ) *
+          50 <
+        150
+      ) {
+        return true;
+      }
       return false;
     }
   ],

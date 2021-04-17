@@ -126,7 +126,7 @@ export function hasActiveEnergy(room: Room): boolean {
   if (room.memory.cans) {
     return (
       (room.find(FIND_SOURCES_ACTIVE).length > 0 &&
-        room.find(FIND_SOURCES_ACTIVE).every(
+        room.find(FIND_SOURCES_ACTIVE).some(
           source =>
             getWorkersById(
               room.find(FIND_STRUCTURES, {

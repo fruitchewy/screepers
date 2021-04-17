@@ -75,6 +75,7 @@ export module RoomManagement {
             ),
           <Assignment[]>[]
         );
+        console.log(JSON.stringify(assignments));
 
         const unallocatedPrecull = this.allocateCreeps(assignments, this.creeps);
 

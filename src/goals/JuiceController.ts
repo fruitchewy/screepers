@@ -12,7 +12,7 @@ import {
 
 export const JuiceController: Goal = {
   preconditions: [
-    room => (roomHealthy(room) ? hasActiveEnergy(room) : true),
+    //room => (roomHealthy(room) ? hasActiveEnergy(room) : true),
     function (room: Room): boolean {
       const controller = room.controller;
       if (!controller || !controller.my || room.find(FIND_MY_SPAWNS).length == 0) {
@@ -45,19 +45,19 @@ export const JuiceController: Goal = {
       const workParts = liveCreepsWithWorks.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0);
       const addWorks =
         Math.min(
-          (room.find(FIND_SOURCES).length * SOURCE_ENERGY_CAPACITY) / ENERGY_REGEN_TIME / HARVEST_POWER - workParts,
-          Math.floor((room.energyCapacityAvailable - creepBodyCost(getJuicerBody(room))) / 150)
+          (sources * SOURCE_ENERGY_CAPACITY) / ENERGY_REGEN_TIME / HARVEST_POWER - workParts,
+          1 + Math.floor((room.energyCapacityAvailable - creepBodyCost(getJuicerBody(room))) / 150)
         ) ?? 0;
 
       const maxparts = (sources * SOURCE_ENERGY_CAPACITY) / ENERGY_REGEN_TIME / HARVEST_POWER;
-
+      console.log(workParts, addWorks, maxparts);
       if (liveWorkers.length < Math.ceil(controller.level ** 1.2) && roomHealthy(room) && hasActiveEnergy(room)) {
         if (liveWorkers.length == 0) {
           return true;
         } else
           return (
             workParts + 2 <= maxparts &&
-            liveWorkers.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0) < maxparts * 3 &&
+            liveWorkers.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0) < maxparts * 2 &&
             addWorks > 1
           );
       }

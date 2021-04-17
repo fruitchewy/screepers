@@ -19,6 +19,7 @@ import { ExploreNeighbors } from "goals/ExploreNeighbors";
 import { JuiceBootstrapNeighbor } from "goals/JuiceBootstrapNeighbor";
 import { BuilderNeighborSpawns } from "goals/BuilderNeighborSpawns";
 import { BuilderNeighborSites } from "goals/BuilderNeighborSites";
+import { getWorkersById } from "goals/common";
 
 export module RoomManagement {
   export class Director {
@@ -64,7 +65,7 @@ export module RoomManagement {
         const activeSites = this.room.find(FIND_MY_CONSTRUCTION_SITES).length;
         builds.slice(0, 5 - activeSites).forEach(req => this.room.createConstructionSite(req.pos, req.structureType));
 
-        //generate creep assignments
+        // Generate creep assignments
         const assignments = this.creepGoals.reduce(
           (a, goal) =>
             a.concat(
@@ -74,18 +75,38 @@ export module RoomManagement {
             ),
           <Assignment[]>[]
         );
-        if (this.room.name == "W9N8") {
-          //console.log("ASSIGN" + this.room.name + assignments.length + assignments[0]?.job);
-          //console.log(unallocated.length + JSON.stringify(unallocated[0]));
-          //console.log(unsatisfied.length + JSON.stringify(unsatisfied[0]));
+
+        const unallocatedPrecull = this.allocateCreeps(assignments, this.creeps);
+
+        // Cull upgraders if we need creeps
+        let unallocated = unallocatedPrecull;
+        if (unallocatedPrecull.length > 1) {
+          getWorkersById(this.room.controller!.id, this.room).forEach(creep => {
+            creep.makeIdle(true);
+            console.log("culled");
+          });
+          // Generate new creep assignments
+          const assignmentsNew = this.creepGoals.reduce(
+            (a, goal) =>
+              a.concat(
+                goal.getCreepAssignments && goal.preconditions.every(pre => pre(this.room) == true)
+                  ? goal.getCreepAssignments(this.room)
+                  : []
+              ),
+            <Assignment[]>[]
+          );
+          unallocated = this.allocateCreeps(assignmentsNew, this.creeps);
         }
 
-        const unallocated = this.allocateCreeps(assignments, this.creeps);
-        const unsatisfied = this.spawnCreeps(unallocated);
+        let unsatisfied = this.spawnCreeps(unallocated);
 
         let idle = this.creeps.filter(creep => creep.memory.job === Job.Idle);
 
-        this.room.visual.text(unsatisfied.length + " unsatisfied assignments", 10, 20);
+        if (unallocatedPrecull[0]?.memory.target != unallocated[0]?.memory.target) {
+          console.log("cull successful");
+        }
+        this.room.visual.text(unallocated.length + " unallocated", 10, 19);
+        this.room.visual.text(unsatisfied.length + " unsatisfied", 10, 20);
         this.room.visual.text("" + (this.creeps.length - idle.length) + " active creeps", 10, 21);
         this.room.visual.text(idle.length + " idle creeps", 10, 22);
         if (unsatisfied.length > 0) {
@@ -177,23 +198,37 @@ export module RoomManagement {
     }
 
     private spawnCreeps(wants: Assignment[]): Assignment[] {
-      const spawn = this.room.find(FIND_MY_SPAWNS)[0];
-
-      if (wants.length < 1 || !spawn) {
+      const spawns = this.room.find(FIND_MY_SPAWNS).filter(spawn => !spawn.spawning);
+      if (spawns.length < 1) {
         return wants;
       }
 
-      const res = spawn.spawnCreep(wants[0].body, wants[0].job + Game.time);
-      if (res === 0) {
-        console.log(
-          "Spawning " + wants[0].job + " with target " + wants[0].memory.target.x + "," + wants[0].memory.target.y
-        );
-        return wants.slice(1, wants.length);
+      for (const spawn of spawns) {
+        if (wants.length < 1) {
+          return [];
+        }
+
+        const res = spawn.spawnCreep(wants[0].body, wants[0].job + Game.time);
+        if (res === 0) {
+          console.log(
+            "Spawning " + wants[0].job + " with target " + wants[0].memory.target.x + "," + wants[0].memory.target.y
+          );
+          wants = wants.slice(1, wants.length);
+        }
       }
       return wants;
     }
 
     private runCreep(creep: Creep): void {
+      if (creep.memory == undefined || !creep.memory || !creep.memory.job) {
+        creep.memory = {
+          job: Job.Idle,
+          source: creep.pos,
+          target: creep.pos,
+          owner: creep.id,
+          stuckTicks: 0
+        };
+      }
       switch (creep.memory.job) {
         case Job.Harvester:
           harvester.run(creep, this.room);

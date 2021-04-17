@@ -3,7 +3,7 @@ import { getJuicerBody, getJuicerSource, getWorkersById, hasActiveEnergy, roomHe
 
 export const JuiceExtensions: Goal = {
   preconditions: [
-    room => (roomHealthy(room) ? hasActiveEnergy(room) : true),
+    hasActiveEnergy,
     room =>
       room.find(FIND_MY_STRUCTURES, {
         filter: struct => struct.structureType == STRUCTURE_EXTENSION
@@ -12,19 +12,19 @@ export const JuiceExtensions: Goal = {
       const extensions = <StructureExtension[]>room.find(FIND_MY_STRUCTURES, {
         filter: struct => struct.structureType == STRUCTURE_EXTENSION
       });
-      const liveWorkers = extensions.reduce((a, b) => a + getWorkersById(b.id, room).length, 0);
+      const liveWorkers = extensions.reduce((a, ext) => a.concat(getWorkersById(ext.id, room)), <Creep[]>[]);
       const liveNonIdleWorkers = extensions.reduce(
         (a, b) => a + getWorkersById(b.id, room).filter(w => w.memory.job != Job.Idle).length,
         0
       );
       return (
-        (room.energyCapacityAvailable -
-          300 -
-          room.energyAvailable -
-          room.find(FIND_MY_SPAWNS)[0].store.getUsedCapacity(RESOURCE_ENERGY)) /
-          getJuicerBody(room).filter(part => part == CARRY).length >
-        50
-        //liveNonIdleWorkers < Math.ceil((room.energyCapacityAvailable - room.energyAvailable) / 200)
+        extensions.reduce((a, ext) => a + ext.store.getFreeCapacity(RESOURCE_ENERGY), 0) >
+          liveWorkers.reduce((a, creep) => a + creep.body.filter(p => p.type == CARRY).length, 0) *
+            CARRY_CAPACITY *
+            1.5 &&
+        (liveWorkers.reduce((a, creep) => a + creep.body.filter(p => p.type == CARRY).length, 0) * CARRY_CAPACITY) /
+          40 <
+          (room.find(FIND_SOURCES).length * SOURCE_ENERGY_CAPACITY) / ENERGY_REGEN_TIME / 1.6
       );
     }
   ],

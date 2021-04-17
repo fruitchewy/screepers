@@ -3,7 +3,7 @@ import { Traveler } from "utils/Traveler";
 export const FlagJetcans: Goal = {
   preconditions: [
     function (room: Room): boolean {
-      return (!room.memory.cans || room.memory.cans.length < 1) && jetcanReady(room);
+      return (!room.memory.cans || room.memory.cans.length < room.find(FIND_SOURCES).length) && jetcanReady(room);
     }
   ],
   getConstructionSites(room: Room): BuildRequest[] {

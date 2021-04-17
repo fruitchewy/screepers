@@ -16,7 +16,7 @@ export const SpawnMiners: Goal = {
                   struct.pos.x == pos.x && struct.pos.y == pos.y && struct.structureType === STRUCTURE_CONTAINER
               })[0]?.id,
               room
-            ).length < MINERS_PER_CAN
+            ).filter(creep => creep.memory.job == Job.Miner).length < MINERS_PER_CAN
         ) &&
         room.energyCapacityAvailable >= 550
       );

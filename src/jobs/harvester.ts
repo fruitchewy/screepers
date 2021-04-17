@@ -60,7 +60,7 @@ export function run(creep: Creep, room: Room): void {
       creep.memory.owner = newTarget.id;
       creep.memory.target = newTarget.pos;
     } else {
-      creep.makeIdle(false);
+      creep.makeIdle(true);
     }
   }
 
@@ -116,8 +116,9 @@ function moveToHarvest(creep: Creep, source: Source | StructureContainer, room: 
         source instanceof StructureContainer &&
         source.store.getUsedCapacity(RESOURCE_ENERGY) <= creep.store.getFreeCapacity(RESOURCE_ENERGY)
       ) {
+        creep.memory.stuckTicks++;
         if (creep.memory.stuckTicks > 15) {
-          creep.makeIdle(false);
+          creep.makeIdle(true);
         }
         return;
       }
@@ -126,7 +127,7 @@ function moveToHarvest(creep: Creep, source: Source | StructureContainer, room: 
     case ERR_NOT_ENOUGH_RESOURCES:
       creep.memory.stuckTicks++;
       if (creep.memory.stuckTicks > 15) {
-        creep.makeIdle(false);
+        creep.makeIdle(true);
       }
       break;
     case ERR_INVALID_TARGET:

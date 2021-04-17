@@ -24,7 +24,7 @@ export const JuiceSpawns: Goal = {
         return true;
       }
 
-      if (liveNonIdleWorkers < 1 && spawns[0].store.getFreeCapacity(RESOURCE_ENERGY) > 50) {
+      if (liveNonIdleWorkers < 1 && spawns.some(spawn => spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) {
         return true;
       }
 
@@ -35,7 +35,9 @@ export const JuiceSpawns: Goal = {
     }
   ],
   getCreepAssignments(room: Room): Assignment[] {
-    const spawn = room.find(FIND_MY_SPAWNS)[0];
+    const spawn = room
+      .find(FIND_MY_SPAWNS)
+      .sort((a, b) => getWorkersById(a.id, room).length - getWorkersById(b.id, room).length)[0];
 
     let source: RoomPosition;
     let body: BodyPartConstant[];

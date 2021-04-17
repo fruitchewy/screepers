@@ -1,6 +1,6 @@
 import { RoomManagement } from "RoomManagement";
 import { Job } from "Job";
-import { getJuicerSource } from "goals/common";
+import { EnergySourceStructure, getJuicerSource, isEnergySourceStructure } from "goals/common";
 
 // Runs all creep actions
 export function run(creep: Creep, room: Room): void {
@@ -53,6 +53,29 @@ export function run(creep: Creep, room: Room): void {
     }
   }
 
+  //Check for empty sources and alternatives periodically
+  if (
+    Game.time % 10 == 0 &&
+    isEnergySourceStructure(source) &&
+    source.store.getUsedCapacity(RESOURCE_ENERGY) < creep.store.getFreeCapacity(RESOURCE_ENERGY) &&
+    room.find(FIND_STRUCTURES, {
+      filter: s =>
+        s.id != source.id &&
+        isEnergySourceStructure(s) &&
+        (<EnergySourceStructure>s).store.getUsedCapacity(RESOURCE_ENERGY) >
+          (creep.pos.findPathTo(s).length / 1.5) * creep.store.getCapacity(RESOURCE_ENERGY)
+    }).length > 0
+  ) {
+    creep.memory.source =
+      creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        filter: s =>
+          s.id != source.id &&
+          isEnergySourceStructure(s) &&
+          (<EnergySourceStructure>s).store.getUsedCapacity(RESOURCE_ENERGY) >
+            (creep.pos.findPathTo(s).length / 1.5) * creep.store.getCapacity(RESOURCE_ENERGY)
+      })?.pos ?? creep.memory.source;
+  }
+
   if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0 || tryBuild(creep, target) === 0) {
     moveToBuild(creep, target);
   } else if (
@@ -81,17 +104,24 @@ function moveToHarvest(creep: Creep, source: Source | StructureContainer, room: 
       if (
         creep.pos.getRangeTo(source) <= 4 &&
         source instanceof StructureContainer &&
-        source.store.getUsedCapacity(RESOURCE_ENERGY) <= 100
+        source.store.getUsedCapacity(RESOURCE_ENERGY) <= creep.store.getFreeCapacity(RESOURCE_ENERGY)
       ) {
+        creep.memory.stuckTicks++;
+        if (creep.memory.stuckTicks > 15) {
+          creep.makeIdle(true);
+        }
         return;
       }
       creep.travelTo(source.pos);
       break;
+    case ERR_NOT_ENOUGH_RESOURCES:
+      creep.memory.stuckTicks++;
+      if (creep.memory.stuckTicks > 15) {
+        creep.makeIdle(true);
+      }
+      break;
     case ERR_INVALID_TARGET:
       creep.memory.source = room.find(FIND_SOURCES_ACTIVE)[0].pos;
-      break;
-    case ERR_NOT_ENOUGH_RESOURCES:
-      creep.memory.source = getJuicerSource(room)!;
       break;
     default:
   }

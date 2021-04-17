@@ -43,6 +43,11 @@ export const JuiceController: Goal = {
         );
 
       const workParts = liveCreepsWithWorks.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0);
+      const addWorks =
+        Math.min(
+          (room.find(FIND_SOURCES).length * SOURCE_ENERGY_CAPACITY) / ENERGY_REGEN_TIME / HARVEST_POWER - workParts,
+          Math.floor((room.energyCapacityAvailable - creepBodyCost(getJuicerBody(room))) / 150)
+        ) ?? 0;
 
       const maxparts = (sources * SOURCE_ENERGY_CAPACITY) / ENERGY_REGEN_TIME / HARVEST_POWER;
 
@@ -52,7 +57,8 @@ export const JuiceController: Goal = {
         } else
           return (
             workParts + 2 <= maxparts &&
-            liveWorkers.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0) < maxparts * 3
+            liveWorkers.reduce((a, b) => a + b.body.filter(p => p.type === WORK).length, 0) < maxparts * 3 &&
+            addWorks > 1
           );
       }
       return false;
@@ -82,11 +88,15 @@ export const JuiceController: Goal = {
           Math.floor((room.energyCapacityAvailable - creepBodyCost(getJuicerBody(room))) / 150)
         ) ?? 0;
       let body = getJuicerBody(room);
-      if (!body.some(p => p === WORK) && addWorks > 0) {
+      if (!body.some(p => p === WORK)) {
+        if (addWorks < 2) {
+          return [];
+        }
         for (let i = 0; i < addWorks; i++) {
           body = body.concat([MOVE, WORK]);
         }
       }
+
       const assignment: Assignment = {
         job: Job.Harvester,
         body: body,

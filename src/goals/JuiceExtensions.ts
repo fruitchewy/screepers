@@ -37,7 +37,7 @@ export const JuiceExtensions: Goal = {
       ext => ext.store.getFreeCapacity(RESOURCE_ENERGY) !== 0 && getWorkersById(ext.id, room).length === 0
     );
 
-    const target = nonEmptyIdleExtensions[0] ? nonEmptyIdleExtensions[0] : extensions[0];
+    const target = nonEmptyIdleExtensions[0] ?? extensions[0];
 
     const source = getJuicerSource(room);
     if (source) {
